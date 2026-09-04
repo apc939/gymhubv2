@@ -16,10 +16,13 @@ WORKDIR /app/frontend
 COPY frontend/package.json frontend/package-lock.json* ./
 # --ignore-scripts: the web image only needs `vite build`; the one heavy postinstall in this tree
 # (@capacitor/assets -> sharp, a libvips download from GitHub) is for drawing app icons and has
-# timed out on the shared runners — a lockfile-ignoring `npm install` fallback is no answer to that.
 RUN npm ci --ignore-scripts
 COPY api/coach/core/ /app/api/coach/core/
 COPY frontend/ ./
+ARG VITE_IMG_BASE=https://cdn.jsdelivr.net/gh/hasaneyldrm/exercises-dataset@7455efae41b330c265e7cd4b78dfa848e7ce5ebd/images/
+ARG VITE_GIF_BASE=https://cdn.jsdelivr.net/gh/hasaneyldrm/exercises-dataset@7455efae41b330c265e7cd4b78dfa848e7ce5ebd/videos/
+ENV VITE_IMG_BASE=$VITE_IMG_BASE
+ENV VITE_GIF_BASE=$VITE_GIF_BASE
 RUN npm run build
 
 FROM nginx:alpine
