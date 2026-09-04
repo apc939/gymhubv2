@@ -692,7 +692,7 @@ const routes = {
 
       const initialPatientState = {
         unit: "kg", restSec: 60, restPauseSec: 15, sound: true, timerFlash: false,
-        keepAwake: true, lang: "es", theme: "dark", accent: "emerald", body: "male",
+        keepAwake: true, lang: "es", theme: "light", accent: "sky", body: "male",
         targetW: null, bodyweight: [],
         routines: archetypeData ? [{
           id: archetypeData.id,
@@ -714,7 +714,7 @@ const routes = {
         reminder: { on: !!archetypeData, time: "08:00", tz: "America/Bogota" },
         checkIn: false,
         _clinical: !!archetypeData,
-        _ts: Date.now() + 86400000
+        _ts: Date.now()
       };
       atomicWrite(patientStatePath, JSON.stringify(initialPatientState, null, 2));
     }
@@ -858,8 +858,11 @@ const routes = {
       const curPath = stateFile(user.id);
       if (fs.existsSync(curPath)) {
         const current = JSON.parse(fs.readFileSync(curPath, 'utf8'));
-        if (current && (current._ts || 0) > (body.state._ts || 0)) {
-          return json(res, 200, { ok: false, conflict: true, ts: current._ts });
+        const now = Date.now();
+        const currentTs = current?._ts || 0;
+        const incomingTs = body.state._ts || 0;
+        if (currentTs > incomingTs && currentTs <= now + 60000) {
+          return json(res, 200, { ok: false, conflict: true, ts: currentTs });
         }
       }
     } catch {}

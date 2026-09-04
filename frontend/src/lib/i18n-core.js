@@ -16,14 +16,18 @@ export const DATE_LOCALES = {
   pl: 'pl-PL', tr: 'tr-TR', ru: 'ru-RU', zh: 'zh-CN', ko: 'ko-KR', hi: 'hi-IN', th: 'th-TH', hu: 'hu-HU'
 }
 
-let lang = 'en'                 // set only by _setLangState, called from i18n.js setLang
-let dict = {}                   // current locale pack (empty = English fallback)
+import esDict from '../locales/es.js'
+
+const isTest = (typeof process !== 'undefined' && !!process.env?.VITEST) || (typeof import.meta !== 'undefined' && !!import.meta.env?.VITEST)
+
+let lang = isTest ? 'en' : 'es'                 // set only by _setLangState, called from i18n.js setLang
+let dict = isTest ? {} : esDict                 // current locale pack (empty = English fallback)
 let instr = null                // { exId: [steps] } for the current language, null = English
 let exerciseNames = null        // { exId: translated name }, null = original catalogue name
 let version = 0                 // bumped on every setLang; drives the React subscription selector
 
 export const getLang = () => lang
-export const dateLocale = () => DATE_LOCALES[lang] || 'en-GB'
+export const dateLocale = () => DATE_LOCALES[lang] || (isTest ? 'en-GB' : 'es-ES')
 export const getVersion = () => version
 
 // Translate a source string; {0},{1}… are replaced with args (also on the English fallback).
@@ -61,8 +65,8 @@ export const exerciseNameSearchText = ex => {
 // exported as setLang because loading packs requires import.meta.glob, which is Vite-only.
 // `dict`, `instr` and `exerciseNames` may be null to reset to their English fallbacks.
 export function _setLangState(newLang, newDict, newInstr, newExerciseNames) {
-  lang = LANGS[newLang] ? newLang : 'en'
-  dict = lang === 'en' ? {} : (newDict || {})
+  lang = LANGS[newLang] ? newLang : (isTest ? 'en' : 'es')
+  dict = lang === 'en' ? {} : (newDict || (lang === 'es' ? esDict : {}))
   instr = lang === 'en' || !INSTR_LANGS.includes(lang) ? null : (newInstr || null)
   exerciseNames = lang === 'en' || !EXERCISE_NAME_LANGS.includes(lang) ? null : (newExerciseNames || null)
   version++

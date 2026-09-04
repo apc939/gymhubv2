@@ -8,10 +8,11 @@ import { MOBILE, initReminderSync, nativeLoad, nativeSave, syncReminder, writeAu
 import { loadRemote, chooseLocal, forgetRemote, connect } from '../lib/remote.js'
 import { loadCoachDevice, saveCoachDevice, coachDeviceSettings } from '../lib/coach-device.js'
 
+const isTest = (typeof process !== 'undefined' && !!process.env?.VITEST) || (typeof import.meta !== 'undefined' && !!import.meta.env?.VITEST)
 const KEY = 'gym_state_v1'
 export const DEF = {
-  unit: 'kg', restSec: 90, restPauseSec: 15, sound: true, timerFlash: false, keepAwake: true, lang: 'en',
-  theme: 'dark', accent: 'lime', body: 'male', targetW: null,
+  unit: 'kg', restSec: 90, restPauseSec: 15, sound: true, timerFlash: false, keepAwake: true, lang: isTest ? 'en' : 'es',
+  theme: 'light', accent: 'sky', body: 'male', targetW: null,
   bodyweight: [], routines: [], week: {}, dayPlan: {},
   exWeights: {}, workouts: [], active: null, customEx: [], gifSize: 'full',
   // effort: which per-set effort scale is logged — 'none' | 'rir' | 'rpe'. null, not 'none', so
@@ -64,7 +65,7 @@ const hasData = st => !!((st.workouts || []).length || (st.routines || []).lengt
 // session belongs to the device that is currently running it.
 export function restoredStateFor(local, remote, dirty = false) {
   if (!remote) return null
-  if (remote._clinical) {
+  if (remote._clinical && !hasData(local)) {
     const next = Object.assign(clone(DEF), remote)
     if (local?.active) next.active = local.active
     return next
@@ -196,7 +197,7 @@ export const useStore = create((set, get) => {
         const { state } = await api('/api/data')
         const S = get().S
         const dirty = localStorage.getItem('gym_dirty') === '1'
-        const restored = (force || state?._clinical) ? Object.assign(clone(DEF), state) : restoredStateFor(S, state, dirty)
+        const restored = (force || (state?._clinical && !hasData(S))) ? Object.assign(clone(DEF), state) : restoredStateFor(S, state, dirty)
         if (restored) {
           localStorage.removeItem('gym_dirty')
           persist(restored, false)

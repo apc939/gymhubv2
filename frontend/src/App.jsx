@@ -44,8 +44,8 @@ const resolveTheme = theme => theme === 'light' || theme === 'dark'
 
 function applyPrefs(theme, accent) {
   const de = document.documentElement
-  de.dataset.theme = resolveTheme(theme)
-  de.dataset.accent = ACCENTS[accent] ? accent : 'lime'
+  de.dataset.theme = resolveTheme(theme || 'light')
+  de.dataset.accent = ACCENTS[accent] ? accent : 'sky'
   const meta = document.querySelector('meta[name="theme-color"]')
   if (meta) meta.content = de.dataset.theme === 'light' ? '#f2f2f7' : '#000000'
 }
@@ -70,8 +70,8 @@ function Shell() {
     mql.addEventListener('change', onChange)
     return () => mql.removeEventListener('change', onChange)
   }, [S.theme, S.accent])
-  useEffect(() => { setLang(S.lang || 'en') }, [S.lang])
-  useEffect(() => { document.documentElement.lang = S.lang || 'en' }, [langV, S.lang])
+  useEffect(() => { setLang(S.lang || 'es') }, [S.lang])
+  useEffect(() => { document.documentElement.lang = S.lang || 'es' }, [langV, S.lang])
   // Forward navigation starts at the top; going back lands where you left off.
   // The position is recorded from scroll events rather than read at route
   // change, because by then a shorter page may already have clamped it.
@@ -99,8 +99,15 @@ function Shell() {
   const authed = user || isGuest
   if (!ready && !authed) return (
     <div id="app">
-      <div style={{ paddingTop: '44vh', display: 'flex', justifyContent: 'center', fontSize: 34, color: 'var(--label-3)' }}>
+      <div style={{ paddingTop: '38vh', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14, fontSize: 36, color: 'var(--acc)' }}>
         <Icon name="dumbbell" />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 9, opacity: .85 }}>
+          <img src="/brand-logo-128.png" alt="GymHub" style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'contain' }} />
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+            <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--label)', letterSpacing: '-.01em' }}>GymHub</span>
+            <span style={{ fontSize: 11, color: 'var(--label-3)' }}>by @medandresparra</span>
+          </div>
+        </div>
       </div>
     </div>
   )
@@ -110,6 +117,12 @@ function Shell() {
       {/* keyed on the route: a view that throws is contained, and switching tabs
           re-mounts the boundary, so the tab bar is always a way out */}
       <div id="app" className="vfade" key={loc.pathname}>
+        {authed && !needsMobileOnboarding && (
+          <div className="brand-bar">
+            <img src="/brand-logo-128.png" alt="GymHub" className="brand-bar-logo" />
+            <span className="brand-bar-name">GymHub <span className="brand-bar-sub">by @medandresparra</span></span>
+          </div>
+        )}
         <ErrorBoundary>
           {!authed ? <Login /> : needsMobileOnboarding ? <MobileOnboarding /> : (
             <Routes>
