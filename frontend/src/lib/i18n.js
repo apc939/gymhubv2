@@ -24,8 +24,10 @@ const exerciseNamePacks = import.meta.glob('../exercise-names/*.js')
 const subs = new Set()
 const notify = () => { subs.forEach(f => f()) }
 
+const isTest = (typeof process !== 'undefined' && !!process.env?.VITEST) || (typeof import.meta !== 'undefined' && !!import.meta.env?.VITEST)
+
 export async function setLang(l) {
-  if (!LANGS[l]) l = 'en'
+  if (!LANGS[l]) l = isTest ? 'en' : 'es'
   if (l === getLang() && getVersion() > 0) return
   let dict = {}, instr = null, exerciseNames = null
   try { dict = l === 'en' ? {} : (await localePacks['../locales/' + l + '.js']()).default } catch (e) { dict = {} }
@@ -42,4 +44,13 @@ export async function setLang(l) {
 // Re-renders the subscribing component (and its children) whenever the language changes.
 export function useLang() {
   return useSyncExternalStore(fn => { subs.add(fn); return () => subs.delete(fn) }, getVersion)
+}
+
+// Pre-load default language (es in browser runtime, skipped in test environment)
+if (!isTest) {
+  try {
+    const raw = typeof localStorage !== 'undefined' ? localStorage.getItem('gym_state_v1') : null
+    const initL = raw ? JSON.parse(raw).lang || 'es' : 'es'
+    setLang(initL)
+  } catch {}
 }

@@ -262,8 +262,14 @@ export default function Settings() {
         telling people to look for it, and where it was not. On the phone build there is no
         address bar and no about box, so without this there is no way to tell which build you
         are running, or whether an update actually installed. */}
-    <div className="dim small" style={{ textAlign: 'center', marginTop: 4, lineHeight: 1.6 }}>
-      openGym v{__APP_VERSION__} · {t('free & open source (AGPL v3)')}<br />
+    <div className="dim small" style={{ textAlign: 'center', marginTop: 10, lineHeight: 1.6 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 6 }}>
+        <img src="/brand-logo-128.png" alt="GymHub" style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'contain' }} />
+        <span style={{ fontWeight: 700, color: 'var(--label)', fontSize: 15 }}>GymHub</span>
+        <span>by @medandresparra</span>
+        <span>· v{__APP_VERSION__}</span>
+      </div>
+      {t('Based on openGym by Duarte Santos · Free & open source (AGPL v3)')}<br />
       <a href="https://gitlab.com/DuarteSantos8/opengym" target="_blank" rel="noopener">source code</a> · exercise data: hasaneyldrm/exercises-dataset (MIT)<br />
       exercise images and animations © <a href="https://gymvisual.com/" target="_blank" rel="noopener">Gym visual</a>
     </div>

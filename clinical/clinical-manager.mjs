@@ -174,8 +174,8 @@ function assignArchetype(targetUser, archetypeKey) {
   const archetype = JSON.parse(fs.readFileSync(archetypePath, 'utf8'));
 
   let state = getUserState(user.id) || {
-    unit: 'kg', restSec: 60, sound: true, lang: 'es', theme: 'dark',
-    accent: 'emerald', body: 'male', targetW: null, bodyweight: [],
+    unit: 'kg', restSec: 60, sound: true, lang: 'es', theme: 'light',
+    accent: 'sky', body: 'male', targetW: null, bodyweight: [],
     workouts: [], customEx: [], gifSize: 'full'
   };
 
@@ -202,7 +202,7 @@ function assignArchetype(targetUser, archetypeKey) {
   state.reminder = { on: true, time: '08:00', tz: 'America/Bogota' };
   state.checkIn = false;
   state._clinical = true;
-  state._ts = Date.now() + 86400000;
+  state._ts = Date.now();
 
   const tmpFile = `/tmp/state-${user.id}.json`;
   fs.writeFileSync(tmpFile, JSON.stringify(state, null, 2));

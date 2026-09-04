@@ -113,8 +113,14 @@ export default function Login() {
     catch (e) { if (e.name !== 'NotAllowedError' && e.name !== 'AbortError') useUI.getState().toast(e.message || t('Sign-in failed')) }
   }
   const head = <>
-    <div style={{ fontSize: 54, display: 'flex', justifyContent: 'center', color: 'var(--acc)' }}><Icon name="dumbbell" /></div>
-    <h1 style={{ fontSize: 34, fontWeight: 700, letterSpacing: '-.028em', margin: '10px 0 4px' }}>openGym</h1>
+    <div style={{ fontSize: 84, display: 'flex', justifyContent: 'center', color: 'var(--acc)', filter: 'drop-shadow(0 6px 24px var(--acc-soft))', transition: 'all var(--med) var(--ease)', marginTop: 12, marginBottom: -4 }}>
+      <Icon name="dumbbell" />
+    </div>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, margin: '4px 0 4px' }}>
+      <img src="/brand-logo-128.png" alt="GymHub" style={{ width: 56, height: 56, borderRadius: '50%', objectFit: 'contain' }} />
+      <h1 style={{ fontSize: 34, fontWeight: 700, letterSpacing: '-.028em', margin: 0 }}>GymHub</h1>
+    </div>
+    <div style={{ fontSize: 13, color: 'var(--label-2)', marginBottom: 4 }}>by @medandresparra</div>
   </>
   const wrap = { display: 'flex', flexDirection: 'column', justifyContent: 'center', minHeight: '78vh', textAlign: 'center' }
 
@@ -128,7 +134,8 @@ export default function Login() {
         {t('This demo runs entirely in your browser on example data — nothing is sent anywhere. Passkey sign-in and sync across your devices come with the openGym server, which you get by self-hosting it.')}
       </div>
       <div className="dim small" style={{ marginTop: 22, lineHeight: 1.6 }}>
-        <a href={REPO} target="_blank" rel="noopener">{t('Self-host it in a minute →')}</a>
+        <div>{t('Based on openGym by Duarte Santos · Free & open source (AGPL v3)')}</div>
+        <a href={REPO} target="_blank" rel="noopener">{t('Source code & self-hosting →')}</a>
       </div>
     </div>
   )
@@ -148,7 +155,14 @@ export default function Login() {
         // so say that plainly instead of offering a local profile that cannot be created.
         : t("This browser doesn't support passkeys, and this instance requires an account. Try a browser or device with passkey support.")}</div>}
       {canGuest && <Button variant="ghost" className="dim" onClick={() => setGuest(true)}>{t('Continue without account')}</Button>}
-      <div className="dim small" style={{ marginTop: 26, lineHeight: 1.5 }}>{t('Passkeys use {0} — no passwords.', BIO)}<br />{t('Each profile keeps its own plan, workouts & body weight.')}</div>
+      <div className="dim small" style={{ marginTop: 26, lineHeight: 1.5 }}>
+        {t('Passkeys use {0} — no passwords.', BIO)}<br />
+        {t('Each profile keeps its own plan, workouts & body weight.')}
+        <div style={{ marginTop: 16, opacity: .8, fontSize: 11 }}>
+          {t('Based on openGym by Duarte Santos · Free & open source (AGPL v3)')}<br />
+          <a href={REPO} target="_blank" rel="noopener">{t('Source code')}</a>
+        </div>
+      </div>
     </div>
   )
 }

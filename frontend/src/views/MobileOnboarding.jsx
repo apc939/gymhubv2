@@ -40,19 +40,28 @@ export function ConnectSheet({ close }) {
 export default function MobileOnboarding() {
   const { chooseLocalMode } = useStore()
   const head = <>
-    <div style={{ fontSize: 54, display: 'flex', justifyContent: 'center', color: 'var(--acc)' }}><Icon name="dumbbell" /></div>
-    <h1 style={{ fontSize: 34, fontWeight: 700, letterSpacing: '-.028em', margin: '10px 0 4px' }}>openGym</h1>
+    <div style={{ fontSize: 84, display: 'flex', justifyContent: 'center', color: 'var(--acc)', filter: 'drop-shadow(0 6px 24px var(--acc-soft))', transition: 'all var(--med) var(--ease)', marginTop: 12, marginBottom: -4 }}>
+      <Icon name="dumbbell" />
+    </div>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, margin: '4px 0 4px' }}>
+      <img src="/brand-logo-128.png" alt="GymHub" style={{ width: 56, height: 56, borderRadius: '50%', objectFit: 'contain' }} />
+      <h1 style={{ fontSize: 34, fontWeight: 700, letterSpacing: '-.028em', margin: 0 }}>GymHub</h1>
+    </div>
+    <div style={{ fontSize: 13, color: 'var(--label-2)', marginBottom: 4 }}>by @medandresparra</div>
   </>
   const wrap = { display: 'flex', flexDirection: 'column', justifyContent: 'center', minHeight: '78vh', textAlign: 'center' }
   return (
     <div className="narrow" style={wrap}>
       {head}
-      <div className="muted" style={{ marginBottom: 34 }}>{t('How do you want to use openGym?')}</div>
+      <div className="muted" style={{ marginBottom: 34 }}>{t('How do you want to use GymHub?')}</div>
       <Button variant="primary" icon="lock" onClick={() => chooseLocalMode()}>{t('Use on this device')}</Button>
       <div style={{ height: 10 }} />
       <Button icon="rocket" onClick={() => useUI.getState().openSheet(close => <ConnectSheet close={close} />)}>{t('Connect to my server')}</Button>
       <div className="dim small" style={{ marginTop: 26, lineHeight: 1.5 }}>
         {t('Local keeps everything on this phone. Connecting syncs to your own openGym server instead — you can switch later in Settings.')}
+        <div style={{ marginTop: 16, opacity: .8, fontSize: 11 }}>
+          {t('Based on openGym by Duarte Santos · Free & open source (AGPL v3)')}
+        </div>
       </div>
     </div>
   )

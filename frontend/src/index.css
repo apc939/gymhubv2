@@ -171,6 +171,13 @@ body.resting #app{padding-bottom:calc(250px + var(--sab))}
 @keyframes viewfade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 #app.vfade{animation:viewfade var(--med) var(--ease)}
 
+/* brand bar — subtle brand identity across views */
+.brand-bar{display:flex;align-items:center;gap:10px;padding:4px 0 10px;opacity:.85;transition:opacity var(--fast) var(--ease);user-select:none;-webkit-user-select:none}
+.brand-bar:hover{opacity:1}
+.brand-bar-logo{width:40px;height:40px;border-radius:50%;object-fit:contain;flex:none}
+.brand-bar-name{font-size:15px;font-weight:600;letter-spacing:-.01em;color:var(--label);display:flex;align-items:baseline;gap:6px}
+.brand-bar-sub{font-size:12px;font-weight:400;color:var(--label-3);letter-spacing:0}
+
 /* large title, the way a nav bar does it */
 .hdr{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin:8px 0 18px}
 .hdr h1{font-size:34px;line-height:1.06;font-weight:700;letter-spacing:-.028em}
