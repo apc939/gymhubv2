@@ -21,3 +21,6 @@ node_modules
 junit.xml
 coverage/
 frontend/bundle-size.json
+
+# Clinical generated patient prescriptions
+clinical/prescripciones/*.html

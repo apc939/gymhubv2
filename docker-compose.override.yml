@@ -1,0 +1,20 @@
+services:
+  media:
+    volumes:
+      - opengym_media_img:/out/img
+      - opengym_media_gif:/out/gif
+  api:
+    volumes:
+      - opengym_data:/data
+      - opengym_coach_auth:/coach-auth
+  web:
+    image: opengym-web-local:latest
+    volumes:
+      - opengym_media_img:/usr/share/nginx/html/img:ro
+      - opengym_media_gif:/usr/share/nginx/html/gif:ro
+
+volumes:
+  opengym_media_img:
+  opengym_media_gif:
+  opengym_data:
+  opengym_coach_auth:

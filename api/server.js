@@ -42,6 +42,32 @@ const MAX_BODY = 5 * 1024 * 1024;
 // Secure cookies require HTTPS; over plain http://localhost the flag would drop the cookie
 const SECURE = /^https:/i.test(ORIGIN) ? ' Secure;' : '';
 
+function resolveOrigin(req) {
+  if (req.headers.origin) return req.headers.origin;
+  const host = (req.headers['x-forwarded-host'] || req.headers.host || '').split(':')[0];
+  const proto = req.headers['x-forwarded-proto'] || (req.connection?.encrypted ? 'https' : 'http');
+  if (host === 'localhost' || host === '127.0.0.1') {
+    return 'http://localhost:8080';
+  }
+  if (host) return `${proto}://${req.headers.host}`;
+  return ORIGIN;
+}
+
+function resolveRpId(req) {
+  const origin = req.headers.origin;
+  if (origin) {
+    try {
+      const u = new URL(origin);
+      if (u.hostname === 'localhost' || u.hostname === '127.0.0.1') return 'localhost';
+      return u.hostname;
+    } catch {}
+  }
+  const host = (req.headers['x-forwarded-host'] || req.headers.host || '').split(':')[0];
+  if (host === 'localhost' || host === '127.0.0.1') return 'localhost';
+  if (host) return host;
+  return RP_ID;
+}
+
 fs.mkdirSync(DATA, { recursive: true });
 /* The secrets are locked down file by file rather than by sealing the whole directory.
  *
@@ -70,6 +96,11 @@ db.invites = db.invites || [];
 const isAdmin = user => !!user && (user.admin === true || ADMIN_UIDS.includes(user.id));
 // 0600: db.json holds passkey credential material. It used to be covered by a blanket 0700 on
 // the whole directory; now that the directory stays traversable, the file carries its own mode.
+function reloadDb() {
+  try { db = JSON.parse(fs.readFileSync(dbFile, 'utf8')); } catch {}
+  db.subs = db.subs || [];
+  db.invites = db.invites || [];
+}
 function saveDb() { atomicWrite(dbFile, JSON.stringify(db, null, 2), 0o600); }
 function atomicWrite(file, content, mode) {
   const tmp = file + '.tmp';
@@ -294,12 +325,9 @@ function cookieValues(req, name) {
   return out;
 }
 function cookieToken(req) {
-  for (const name of (COOKIE === LEGACY_COOKIE ? [COOKIE] : [COOKIE, LEGACY_COOKIE])) {
+  for (const name of ['__Host-gymsid', 'gymsid']) {
     const vals = cookieValues(req, name);
     if (!vals.length) continue;
-    // Two different values under one name is not something a browser does on its own — it means
-    // somebody else got to set one. There is no safe way to guess which is the real session, so
-    // refuse both: a signed-out user signs back in, a shadowing attempt gets nothing.
     if (vals.some(v => v !== vals[0])) return null;
     return vals[0];
   }
@@ -333,16 +361,18 @@ function requireAdmin(req, res) {
   if (!isAdmin(user)) { audit(req, 'admin.denied', { ok: false, user }); json(res, 403, { error: 'forbidden' }); return null; }
   return user;
 }
-const expireCookie = name => `${name}=; Path=/; Max-Age=0; HttpOnly;${SECURE} SameSite=Lax`;
-function sessionCookie(user) {
-  const fresh = `${COOKIE}=${makeSession(user)}; Path=/; Max-Age=${SESSION_DAYS * 86400}; HttpOnly;${SECURE} SameSite=Lax`;
-  // Signing in also retires any pre-upgrade cookie, so nobody is left carrying an unprefixed one
-  // (or a shadowing copy of it) alongside the new session.
-  return COOKIE === LEGACY_COOKIE ? [fresh] : [fresh, expireCookie(LEGACY_COOKIE)];
+const expireCookie = name => `${name}=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax`;
+function sessionCookie(user, req) {
+  const isHttps = req ? resolveOrigin(req).startsWith('https:') : false;
+  const cName = isHttps ? '__Host-gymsid' : 'gymsid';
+  const cSec = isHttps ? ' Secure;' : '';
+  const fresh = `${cName}=${makeSession(user)}; Path=/; Max-Age=${SESSION_DAYS * 86400}; HttpOnly;${cSec} SameSite=Lax`;
+  return [fresh];
 }
-const clearCookie = COOKIE === LEGACY_COOKIE
-  ? [expireCookie(LEGACY_COOKIE)]
-  : [expireCookie(COOKIE), expireCookie(LEGACY_COOKIE)];
+const clearCookie = [
+  'gymsid=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax',
+  '__Host-gymsid=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Lax'
+];
 
 /* ---------- CSRF ---------- */
 // SameSite=Lax keeps the session cookie off a genuinely cross-*site* request. It does not keep it
@@ -564,18 +594,24 @@ const routes = {
   },
 
   'POST /api/register/options': async (req, res) => {
+    reloadDb();
     const body = await readBody(req);
     const name = String(body.name || '').trim().slice(0, 40);
     if (!name) return json(res, 400, { error: 'name required' });
     const code = String(body.code || '').trim().toUpperCase();
-    if (INVITE_ONLY && !db.invites.some(i => i.code === code && !i.usedBy && !i.revoked)) {
-      // The rejected code itself is never recorded — a near-miss guess in the log is a liability.
-      audit(req, 'auth.register.denied', { ok: false, name, msg: 'invite-rejected' });
+    if (code) {
+      const inv = db.invites.find(i => i.code === code && !i.usedBy && !i.revoked);
+      if (!inv && INVITE_ONLY) {
+        audit(req, 'auth.register.denied', { ok: false, name, msg: 'invite-rejected' });
+        return json(res, 403, { error: 'a valid invite code is required' });
+      }
+    } else if (INVITE_ONLY) {
+      audit(req, 'auth.register.denied', { ok: false, name, msg: 'invite-required' });
       return json(res, 403, { error: 'a valid invite code is required' });
     }
     const uid = crypto.randomBytes(12).toString('base64url');
     const options = await generateRegistrationOptions({
-      rpName: RP_NAME, rpID: RP_ID,
+      rpName: RP_NAME, rpID: resolveRpId(req),
       userID: Buffer.from(uid), userName: name, userDisplayName: name,
       attestationType: 'none',
       authenticatorSelection: { residentKey: 'required', userVerification: 'preferred' },
@@ -586,6 +622,7 @@ const routes = {
   },
 
   'POST /api/register/verify': async (req, res) => {
+    reloadDb();
     const body = await readBody(req);
     const c = takeChallenge(body.cid);
     if (!c || !c.uid) {
@@ -593,18 +630,20 @@ const routes = {
       return json(res, 400, { error: 'challenge expired — try again' });
     }
     let verification;
+    const reqOrigin = resolveOrigin(req);
+    const reqRpId = resolveRpId(req);
     try {
       verification = await verifyRegistrationResponse({
         response: body.credential,
         expectedChallenge: c.challenge,
-        expectedOrigin: ORIGIN,
-        expectedRPID: RP_ID,
+        expectedOrigin: reqOrigin,
+        expectedRPID: reqRpId,
         requireUserVerification: false
       });
     } catch (e) {
       // e.message can echo attacker-supplied response fields, so only the reason code is kept.
       audit(req, 'auth.register.fail', { ok: false, name: c.name, msg: 'verify-error' });
-      return json(res, 400, { error: verifyError(e, { rpId: RP_ID, origin: ORIGIN }) });
+      return json(res, 400, { error: verifyError(e, { rpId: reqRpId, origin: reqOrigin }) });
     }
     if (!verification.verified) {
       audit(req, 'auth.register.fail', { ok: false, name: c.name, msg: 'not-verified' });
@@ -617,12 +656,15 @@ const routes = {
     }
     // Re-check the invite at the last moment (it may have been used/revoked since options), then burn it.
     let invite = null;
-    if (INVITE_ONLY) {
+    if (c.code) {
       invite = db.invites.find(i => i.code === c.code && !i.usedBy && !i.revoked);
-      if (!invite) {
+      if (!invite && INVITE_ONLY) {
         audit(req, 'auth.register.fail', { ok: false, name: c.name, msg: 'invite-invalid' });
         return json(res, 403, { error: 'invite code is no longer valid — ask for a new one' });
       }
+    } else if (INVITE_ONLY) {
+      audit(req, 'auth.register.fail', { ok: false, name: c.name, msg: 'invite-required' });
+      return json(res, 403, { error: 'invite code is required' });
     }
     const user = { id: c.uid, name: c.name, created: new Date().toISOString() };
     if (invite) { user.invitedBy = invite.code; invite.usedBy = user.id; invite.usedAt = user.created; }
@@ -634,13 +676,56 @@ const routes = {
       transports: body.credential?.response?.transports || []
     });
     saveDb();
+
+    // Provision clinical routine ONLY IF specified in the invite, otherwise keep empty
+    const patientStatePath = stateFile(user.id);
+    if (!fs.existsSync(patientStatePath)) {
+      let archetypeData = null;
+      if (invite && invite.archetype) {
+        const archFile = path.join(DATA, 'archetypes', `${invite.archetype}.json`);
+        try {
+          if (fs.existsSync(archFile)) {
+            archetypeData = JSON.parse(fs.readFileSync(archFile, 'utf8'));
+          }
+        } catch {}
+      }
+
+      const initialPatientState = {
+        unit: "kg", restSec: 60, restPauseSec: 15, sound: true, timerFlash: false,
+        keepAwake: true, lang: "es", theme: "dark", accent: "emerald", body: "male",
+        targetW: null, bodyweight: [],
+        routines: archetypeData ? [{
+          id: archetypeData.id,
+          name: archetypeData.name,
+          emoji: archetypeData.emoji,
+          prog: archetypeData.prog || 'linear',
+          ex: archetypeData.ex.map(e => ({
+            id: e.id,
+            sets: e.sets,
+            reps: e.reps || 10,
+            mode: e.mode || 'reps',
+            weight: e.weight || 0,
+            ...(e.restSec ? { restSec: e.restSec } : {}),
+            prog: e.prog || 'linear'
+          }))
+        }] : [],
+        week: archetypeData?.week || {},
+        dayPlan: {}, exWeights: {}, workouts: [], customEx: [], gifSize: "full",
+        reminder: { on: !!archetypeData, time: "08:00", tz: "America/Bogota" },
+        checkIn: false,
+        _clinical: !!archetypeData,
+        _ts: Date.now() + 86400000
+      };
+      atomicWrite(patientStatePath, JSON.stringify(initialPatientState, null, 2));
+    }
+
     audit(req, 'auth.register.ok', { user, msg: invite ? invite.code : null });
-    json(res, 200, { user: { id: user.id, name: user.name, admin: isAdmin(user) } }, { 'Set-Cookie': sessionCookie(user) });
+    json(res, 200, { user: { id: user.id, name: user.name, admin: isAdmin(user) } }, { 'Set-Cookie': sessionCookie(user, req) });
   },
 
   'POST /api/login/options': async (req, res) => {
     const options = await generateAuthenticationOptions({
-      rpID: RP_ID, userVerification: 'preferred', allowCredentials: []
+      rpID: resolveRpId(req), userVerification: 'preferred', allowCredentials: []
     });
     const cid = putChallenge({ challenge: options.challenge });
     json(res, 200, { cid, options });
@@ -662,12 +747,14 @@ const routes = {
       return json(res, 404, { error: 'unknown passkey — create a profile first' });
     }
     let verification;
+    const reqOrigin = resolveOrigin(req);
+    const reqRpId = resolveRpId(req);
     try {
       verification = await verifyAuthenticationResponse({
         response: body.credential,
         expectedChallenge: c.challenge,
-        expectedOrigin: ORIGIN,
-        expectedRPID: RP_ID,
+        expectedOrigin: reqOrigin,
+        expectedRPID: reqRpId,
         requireUserVerification: false,
         credential: {
           id: cred.id,
@@ -678,7 +765,7 @@ const routes = {
       });
     } catch (e) {
       audit(req, 'auth.login.fail', { ok: false, user: db.users.find(u => u.id === cred.userId), uid: cred.userId, msg: 'verify-error' });
-      return json(res, 400, { error: verifyError(e, { rpId: RP_ID, origin: ORIGIN }) });
+      return json(res, 400, { error: verifyError(e, { rpId: reqRpId, origin: reqOrigin }) });
     }
     if (!verification.verified) {
       audit(req, 'auth.login.fail', { ok: false, user: db.users.find(u => u.id === cred.userId), uid: cred.userId, msg: 'not-verified' });
@@ -696,7 +783,7 @@ const routes = {
       return json(res, 403, { error: 'this account has been disabled' });
     }
     audit(req, 'auth.login.ok', { user });
-    json(res, 200, { user: { id: user.id, name: user.name, admin: isAdmin(user) } }, { 'Set-Cookie': sessionCookie(user) });
+    json(res, 200, { user: { id: user.id, name: user.name, admin: isAdmin(user) } }, { 'Set-Cookie': sessionCookie(user, req) });
   },
 
   // Reads the session purely so the sign-out can be recorded; the cookie is cleared either way.
@@ -766,6 +853,17 @@ const routes = {
     const body = await readBody(req);
     if (!body.state || typeof body.state !== 'object') return json(res, 400, { error: 'state required' });
     delete body.state.active;              // in-progress workouts stay device-local
+
+    try {
+      const curPath = stateFile(user.id);
+      if (fs.existsSync(curPath)) {
+        const current = JSON.parse(fs.readFileSync(curPath, 'utf8'));
+        if (current && (current._ts || 0) > (body.state._ts || 0)) {
+          return json(res, 200, { ok: false, conflict: true, ts: current._ts });
+        }
+      }
+    } catch {}
+
     atomicWrite(stateFile(user.id), JSON.stringify(body.state));
     json(res, 200, { ok: true, ts: body.state._ts || null });
   },

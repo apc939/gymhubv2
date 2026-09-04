@@ -51,9 +51,18 @@ export default function Plan() {
         {weekOrder(weekStartOf(S)).map(d => {
           const r = S.routines.find(x => x.id === S.week[d])
           return <div key={d} className="item" {...tappable(() => dayAssignSheet(d))}>
-            <div className="grow"><div className="tt">{t(DAYN[d])}</div></div>
-            {r ? <span className="tag acc"><Icon name={glyphOf(r.emoji)} />{r.name}</span> : <span className="tag">{t('Rest')}</span>}
-            <Icon name="chevronRight" className="chev" /></div>
+            <span className="lrow-i" style={{ background: r ? 'var(--acc)' : 'var(--surface-3)', color: r ? 'var(--on-acc)' : 'var(--label-3)' }}>
+              <Icon name={r ? glyphOf(r.emoji) : 'moon'} />
+            </span>
+            <div className="grow" style={{ minWidth: 0 }}>
+              <div className="tt">{t(DAYN[d])}</div>
+              <div className="ss ellipsis" style={{ color: r ? 'var(--label-2)' : 'var(--label-3)' }}>
+                {r ? r.name : t('Rest day')}
+              </div>
+            </div>
+            {r ? <span className="tag acc" style={{ flexShrink: 0 }}>{exCount(r.ex.length)}</span> : <span className="tag" style={{ flexShrink: 0 }}>{t('Rest')}</span>}
+            <Icon name="chevronRight" className="chev" />
+          </div>
         })}
       </div>
     </div><div>

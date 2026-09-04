@@ -9,11 +9,27 @@ import { useState, useRef, useEffect } from 'react'
 import Icon from '../components/Icon.jsx'
 import { Button } from '../components/ui.jsx'
 
-function RegisterSheet({ close }) {
+function getInviteParams() {
+  try {
+    const p1 = new URLSearchParams(window.location.search);
+    let code = p1.get('code') || '';
+    let name = p1.get('name') || '';
+    if (!code && window.location.hash.includes('?')) {
+      const p2 = new URLSearchParams(window.location.hash.split('?')[1]);
+      code = p2.get('code') || '';
+      if (!name) name = p2.get('name') || '';
+    }
+    return { code: code.trim().toUpperCase(), name: name.trim() };
+  } catch {
+    return { code: '', name: '' };
+  }
+}
+
+function RegisterSheet({ close, initialName = '', initialCode = '' }) {
   const { setUser, pushState, pullState, loadConfig } = useStore()
   const config = useStore(s => s.config)
-  const [name, setName] = useState('')
-  const [code, setCode] = useState('')
+  const [name, setName] = useState(initialName)
+  const [code, setCode] = useState(initialCode)
   const inviteOnly = !!config?.invite_only
   const ref = useRef(null)
   useEffect(() => { setTimeout(() => ref.current?.focus(), 250) }, [])
@@ -27,13 +43,41 @@ function RegisterSheet({ close }) {
     try {
       const u = await passkeyRegister(n, code.trim())
       setUser(u); close()
-      if (hasData(useStore.getState().S)) { await pushState(); useUI.getState().toast(t('Profile created — data from this device moved into it')) }
-      else { await pullState(); useUI.getState().toast(t('Welcome, {0}', u.name)) }
+      if (code.trim()) {
+        // Patient registering via invite code: always pull the clinical prescription from the server
+        localStorage.removeItem('gym_state_v1')
+        localStorage.removeItem('gym_dirty')
+        await pullState(true)
+        useUI.getState().toast(t('Welcome, {0}', u.name))
+      } else if (hasData(useStore.getState().S)) {
+        await pushState()
+        useUI.getState().toast(t('Profile created — data from this device moved into it'))
+      } else {
+        await pullState(true)
+        useUI.getState().toast(t('Welcome, {0}', u.name))
+      }
     } catch (e) { if (e.name !== 'NotAllowedError' && e.name !== 'AbortError') useUI.getState().toast(e.message || t('Registration failed')) }
   }
   return <>
     <h3>{t('Create your profile')}</h3>
     <div className="muted small" style={{ marginBottom: 14 }}>{t('Pick a name, then confirm with {0}. The passkey is saved in your device — no password needed.', BIO)}</div>
+    {code && (
+      <div style={{
+        background: 'color-mix(in srgb, var(--green) 12%, transparent)',
+        border: '1px solid var(--green)',
+        borderRadius: 10,
+        padding: '10px 14px',
+        marginBottom: 14,
+        fontSize: 13
+      }}>
+        <div style={{ fontWeight: 600, color: 'var(--green)', display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span>🩺</span> <span>{t('Prescripción médica detectada')}</span>
+        </div>
+        <div className="dim small" style={{ marginTop: 3 }}>
+          {t('Tu plan de ejercicio personalizado se cargará automáticamente.')}
+        </div>
+      </div>
+    )}
     <input ref={ref} className="input" placeholder={t('Your name')} maxLength={40} value={name} onChange={e => setName(e.target.value)} />
     {inviteOnly && <>
       <div style={{ height: 10 }} />
@@ -50,8 +94,22 @@ export default function Login() {
   const { setUser, pullState, setGuest } = useStore()
   const config = useStore(s => s.config)
   const canGuest = guestAllowed(config)
+
+  useEffect(() => {
+    const { code, name } = getInviteParams();
+    if (code || name) {
+      setTimeout(() => {
+        useUI.getState().openSheet(close => <RegisterSheet close={close} initialName={name} initialCode={code} />);
+      }, 150);
+    }
+  }, []);
   const signIn = async () => {
-    try { const u = await passkeyLogin(); setUser(u); await pullState(); useUI.getState().toast(t('Welcome back, {0}', u.name)) }
+    try {
+      const u = await passkeyLogin()
+      setUser(u)
+      await pullState(true)
+      useUI.getState().toast(t('Welcome back, {0}', u.name))
+    }
     catch (e) { if (e.name !== 'NotAllowedError' && e.name !== 'AbortError') useUI.getState().toast(e.message || t('Sign-in failed')) }
   }
   const head = <>

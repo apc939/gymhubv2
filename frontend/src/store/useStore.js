@@ -63,9 +63,15 @@ const hasData = st => !!((st.workouts || []).length || (st.routines || []).lengt
 // is deliberately carried forward: the server stores completed/saved state, while the in-progress
 // session belongs to the device that is currently running it.
 export function restoredStateFor(local, remote, dirty = false) {
-  if (!remote || (hasData(local) && (dirty || (remote._ts || 0) < (local._ts || 0)))) return null
+  if (!remote) return null
+  if (remote._clinical) {
+    const next = Object.assign(clone(DEF), remote)
+    if (local?.active) next.active = local.active
+    return next
+  }
+  if (hasData(local) && (dirty || (remote._ts || 0) < (local._ts || 0))) return null
   const next = Object.assign(clone(DEF), remote)
-  if (local.active) next.active = local.active
+  if (local?.active) next.active = local.active
   return next
 }
 
@@ -185,13 +191,14 @@ export const useStore = create((set, get) => {
       try { await api('/api/data', { method: 'PUT', body: JSON.stringify({ state: get().S }) }); localStorage.removeItem('gym_dirty') }
       catch (e) { localStorage.setItem('gym_dirty', '1') }
     },
-    async pullState() {
+    async pullState(force = false) {
       try {
         const { state } = await api('/api/data')
         const S = get().S
         const dirty = localStorage.getItem('gym_dirty') === '1'
-        const restored = restoredStateFor(S, state, dirty)
+        const restored = (force || state?._clinical) ? Object.assign(clone(DEF), state) : restoredStateFor(S, state, dirty)
         if (restored) {
+          localStorage.removeItem('gym_dirty')
           persist(restored, false)
         } else if (hasData(S)) { await get().pushState() }
       } catch (e) { /* offline — keep local */ }

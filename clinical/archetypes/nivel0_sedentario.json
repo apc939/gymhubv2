@@ -1,0 +1,68 @@
+{
+  "id": "rx_clinica_nivel_0",
+  "name": "Nivel 0: Activación Sedentario (Casa)",
+  "emoji": "🌱",
+  "prog": "linear",
+  "meta": {
+    "target": "sedentario",
+    "description": "Prescripción médica para pacientes inactivos. Cero impacto articular, sin equipo, realizable en casa en 15-20 minutos.",
+    "durationMin": 18,
+    "frequencyDays": 3
+  },
+  "ex": [
+    {
+      "id": "3132",
+      "name": "Sentadilla asistida / con apoyo a silla",
+      "sets": 3,
+      "reps": 10,
+      "mode": "reps",
+      "weight": 0,
+      "restSec": 60,
+      "prog": "linear"
+    },
+    {
+      "id": "3785",
+      "name": "Flexiones inclinadas (apoyo en mesa/pared)",
+      "sets": 3,
+      "reps": 8,
+      "mode": "reps",
+      "weight": 0,
+      "restSec": 60,
+      "prog": "linear"
+    },
+    {
+      "id": "3013",
+      "name": "Puente de glúteos en suelo",
+      "sets": 3,
+      "reps": 10,
+      "mode": "reps",
+      "weight": 0,
+      "restSec": 60,
+      "prog": "linear"
+    },
+    {
+      "id": "3158",
+      "name": "Remo de pie (tracción escapular con toalla/marco)",
+      "sets": 3,
+      "reps": 10,
+      "mode": "reps",
+      "weight": 0,
+      "restSec": 60,
+      "prog": "linear"
+    },
+    {
+      "id": "0276",
+      "name": "Dead Bug (Activación Core lumbopélvico)",
+      "sets": 3,
+      "reps": 8,
+      "mode": "reps",
+      "weight": 0,
+      "restSec": 60
+    }
+  ],
+  "week": {
+    "1": "rx_clinica_nivel_0",
+    "3": "rx_clinica_nivel_0",
+    "5": "rx_clinica_nivel_0"
+  }
+}
