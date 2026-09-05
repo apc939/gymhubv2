@@ -33,3 +33,22 @@ describe('webauthnOK', () => {
     expect(webauthnOK()).toBe(false)
   })
 })
+
+describe('api timeout', () => {
+  it('aborts hanging fetch requests after timeout', async () => {
+    const { api } = await import('./api.js')
+    const hangingFetch = (_url, opts) => new Promise((_, reject) => {
+      if (opts?.signal) {
+        opts.signal.addEventListener('abort', () => reject(new DOMException('The operation was aborted', 'AbortError')))
+      }
+    })
+    const origFetch = window.fetch
+    window.fetch = hangingFetch
+    try {
+      await expect(api('/test-hang', { timeout: 50 })).rejects.toThrow('aborted')
+    } finally {
+      window.fetch = origFetch
+    }
+  })
+})
+

@@ -20,7 +20,7 @@ server {
     # as /api/anything.json would be matched by the \.(js|css|json|html)$ block instead and be
     # looked for on disk rather than proxied.
     location ^~ /api/ {
-        proxy_pass http://${BACKEND}:${PORT};
+        proxy_pass http://${BACKEND}:${BACKEND_PORT};
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -35,6 +35,8 @@ server {
         # CF_CONNECTING_IP=$http_cf_connecting_ip to let the real one through — correct only when
         # Cloudflare is genuinely in front, because that is what overwrites a client-supplied one.
         proxy_set_header CF-Connecting-IP "${CF_CONNECTING_IP}";
+        proxy_connect_timeout 5s;
+        proxy_read_timeout 60s;
     }
 
     # SPA fallback

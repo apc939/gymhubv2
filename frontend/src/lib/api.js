@@ -18,10 +18,22 @@ export function setRemoteAuth(base, token) { remoteBase = base || ''; remoteToke
 export async function api(path, opts) {
   const headers = Object.assign({ 'Content-Type': 'application/json' }, opts && opts.headers)
   if (remoteToken) headers.Authorization = 'Bearer ' + remoteToken
-  const r = await fetch(remoteBase + path, Object.assign({}, opts, { headers }))
-  const data = await r.json().catch(() => ({}))
-  if (!r.ok) { const e = new Error(data.error || ('HTTP ' + r.status)); e.status = r.status; throw e }
-  return data
+  const controller = new AbortController()
+  const timeoutMs = opts?.timeout ?? 8000
+  const timer = setTimeout(() => controller.abort(), timeoutMs)
+  if (opts?.signal) {
+    opts.signal.addEventListener('abort', () => controller.abort(), { once: true })
+  }
+  try {
+    const r = await fetch(remoteBase + path, Object.assign({}, opts, { headers, signal: controller.signal }))
+    clearTimeout(timer)
+    const data = await r.json().catch(() => ({}))
+    if (!r.ok) { const e = new Error(data.error || ('HTTP ' + r.status)); e.status = r.status; throw e }
+    return data
+  } catch (err) {
+    clearTimeout(timer)
+    throw err
+  }
 }
 
 // Bootstraps the connection itself: the base isn't configured yet (that's what this call decides),
