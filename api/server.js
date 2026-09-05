@@ -120,6 +120,26 @@ if (fs.existsSync(bundledArchDir)) {
     }
   }
 }
+
+function findArchetype(key) {
+  if (!key) return null;
+  const archKey = String(key).toLowerCase().trim();
+  let archFile = path.join(dataArchDir, `${archKey}.json`);
+  if (!fs.existsSync(archFile)) archFile = path.join(bundledArchDir, `${archKey}.json`);
+  if (!fs.existsSync(archFile) && fs.existsSync(bundledArchDir)) {
+    const match = fs.readdirSync(bundledArchDir).find(f => f.startsWith(archKey) || f.includes(archKey));
+    if (match) archFile = path.join(bundledArchDir, match);
+  }
+  if (!fs.existsSync(archFile) && fs.existsSync(dataArchDir)) {
+    const match = fs.readdirSync(dataArchDir).find(f => f.startsWith(archKey) || f.includes(archKey));
+    if (match) archFile = path.join(dataArchDir, match);
+  }
+  if (fs.existsSync(archFile)) {
+    try { return JSON.parse(fs.readFileSync(archFile, 'utf8')); } catch {}
+  }
+  return null;
+}
+
 // 0600: db.json holds passkey credential material. It used to be covered by a blanket 0700 on
 // the whole directory; now that the directory stays traversable, the file carries its own mode.
 function reloadDb() {
@@ -712,12 +732,7 @@ const routes = {
     if (!fs.existsSync(patientStatePath)) {
       let archetypeData = null;
       if (invite && invite.archetype) {
-        const archFile = path.join(DATA, 'archetypes', `${invite.archetype}.json`);
-        try {
-          if (fs.existsSync(archFile)) {
-            archetypeData = JSON.parse(fs.readFileSync(archFile, 'utf8'));
-          }
-        } catch {}
+        archetypeData = findArchetype(invite.archetype);
       }
 
       const initialPatientState = {
@@ -1062,15 +1077,8 @@ const routes = {
     const body = await readBody(req);
     const u = db.users.find(x => x.id === body.id || x.name.toLowerCase() === String(body.id || '').toLowerCase());
     if (!u) return json(res, 404, { error: 'no such user' });
-    const archKey = String(body.archetype || '').toLowerCase();
-    let archFile = path.join(DATA, 'archetypes', `${archKey}.json`);
-    if (!fs.existsSync(archFile)) archFile = path.join(__dirname, 'archetypes', `${archKey}.json`);
-    if (!fs.existsSync(archFile) && fs.existsSync(bundledArchDir)) {
-      const match = fs.readdirSync(bundledArchDir).find(f => f.startsWith(archKey));
-      if (match) archFile = path.join(bundledArchDir, match);
-    }
-    if (!fs.existsSync(archFile)) return json(res, 400, { error: 'archetype not found' });
-    const archetypeData = JSON.parse(fs.readFileSync(archFile, 'utf8'));
+    const archetypeData = findArchetype(body.archetype);
+    if (!archetypeData) return json(res, 400, { error: 'archetype not found' });
     const pFile = stateFile(u.id);
     let S = readState(u.id) || { unit: 'kg', restSec: 60, lang: 'es', theme: 'light', accent: 'sky', workouts: [] };
     S.routines = [{
