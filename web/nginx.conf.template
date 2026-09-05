@@ -39,6 +39,11 @@ server {
         proxy_read_timeout 60s;
     }
 
+    location /debug-backend {
+        default_type text/plain;
+        return 200 "BACKEND='${BACKEND}' BACKEND_PORT='${BACKEND_PORT}' PORT='${PORT}' NGINX_PORT='${NGINX_PORT}'\n";
+    }
+
     # SPA fallback
     location / {
         try_files $uri $uri/ /index.html;
