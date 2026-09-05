@@ -105,6 +105,11 @@ export default function Settings() {
       </> : webauthnOK() ? <>
         <Row icon="sparkles" iconTint="var(--acc)" title={t('Create passkey profile')} subtitle={t('Keeps your data safe and separate per person.')} accessory="chevron" onClick={registerHere} />
         <Row icon="person" iconTint="var(--blue)" title={t('Sign in with passkey')} accessory="chevron" onClick={signInHere} />
+        <Row icon="signOut" iconTint="var(--red)" title={t('Salir del modo invitado')} subtitle={t('Volver a la pantalla de bienvenida y login')} danger onClick={() => {
+          localStorage.removeItem('gym_guest');
+          useStore.getState().setGuest(false);
+          window.location.href = '/';
+        }} />
       </> : (
         <Row icon="lock" iconTint="var(--grey)" title={t('Passkeys not supported in this browser.')} />
       )}
