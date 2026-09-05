@@ -445,6 +445,58 @@ async function generateReport(targetUser) {
   console.log('=========================================================================\n');
 }
 
+// 5. ELIMINAR USUARIO / PACIENTE
+async function deletePatient(targetUser) {
+  const db = await getDatabase();
+  const user = findUser(targetUser, db);
+
+  if (!user) {
+    console.error(`\n❌ Paciente "${targetUser}" no encontrado.\n`);
+    process.exit(1);
+  }
+
+  if (user.admin) {
+    console.error(`\n⛔ No se puede eliminar a un usuario administrador (${user.name}). Operación denegada.\n`);
+    process.exit(1);
+  }
+
+  if (USE_API) {
+    try {
+      const res = await apiRequest('/api/admin/user/delete', {
+        method: 'POST',
+        body: JSON.stringify({ id: user.id })
+      });
+      console.log(`\n🗑️ Paciente "${res.name}" (UID: ${res.id}) eliminado exitosamente de Railway.`);
+      console.log('   (Credenciales, suscripciones, invitaciones y estado limpiados por completo).\n');
+      return;
+    } catch (e) {
+      console.error('Error al eliminar paciente vía API Railway:', e.message);
+      process.exit(1);
+    }
+  }
+
+  // Fallback Docker local
+  try {
+    const rawDb = runDockerApiCmd('cat /data/db.json');
+    const localDb = JSON.parse(rawDb);
+    localDb.users = (localDb.users || []).filter(u => u.id !== user.id);
+    localDb.creds = (localDb.creds || []).filter(c => c.userId !== user.id);
+    localDb.subs = (localDb.subs || []).filter(s => s.userId !== user.id);
+    localDb.invites = (localDb.invites || []).filter(i => i.usedBy !== user.id && i.code !== user.invitedBy);
+    
+    const tmp = `/tmp/db-${Date.now()}.json`;
+    fs.writeFileSync(tmp, JSON.stringify(localDb, null, 2));
+    execSync(`docker compose cp ${tmp} api:/data/db.json`);
+    fs.unlinkSync(tmp);
+    try { runDockerApiCmd(`rm -f /data/state-${user.id}.json`); } catch {}
+
+    console.log(`\n🗑️ Paciente "${user.name}" (UID: ${user.id}) eliminado exitosamente de Docker local.\n`);
+  } catch (err) {
+    console.error('Error al eliminar en Docker local:', err.message);
+    process.exit(1);
+  }
+}
+
 // MAIN
 const args = process.argv.slice(2);
 const command = args[0];
@@ -478,12 +530,21 @@ switch (command) {
       await generateReport(args[1]);
     }
     break;
+  case 'delete':
+  case 'eliminar':
+    if (!args[1]) {
+      console.log('Uso: node clinical/clinical-manager.mjs delete <paciente/UID>');
+    } else {
+      await deletePatient(args[1]);
+    }
+    break;
   default:
     console.log('\n🩺 openGym Clinical Manager (Conectado a Railway)');
     console.log('Comandos disponibles:');
     console.log('  node clinical/clinical-manager.mjs list');
     console.log('  node clinical/clinical-manager.mjs invite <Nombre Paciente> [nivel0|nivel1|postural]');
     console.log('  node clinical/clinical-manager.mjs assign <usuario> <nivel0|nivel1|postural>');
-    console.log('  node clinical/clinical-manager.mjs report <usuario>\n');
+    console.log('  node clinical/clinical-manager.mjs report <usuario>');
+    console.log('  node clinical/clinical-manager.mjs delete <usuario>\n');
     break;
 }

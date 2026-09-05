@@ -68,7 +68,13 @@ The app is deployed on Railway across two services:
   node clinical/clinical-manager.mjs invite "Nombre Paciente" nivel0
   node clinical/clinical-manager.mjs assign "<user_id>" nivel1
   node clinical/clinical-manager.mjs report "<user_id>"
+  node clinical/clinical-manager.mjs delete "<user_id_o_nombre>"
   ```
+- **User Deletion Protocol**:
+  - Whenever the user instructs via chat to delete a patient or test user, an agent must execute:
+    `node clinical/clinical-manager.mjs delete "<nombre_o_uid>"`
+    or invoke `POST /api/admin/user/delete` with header `x-admin-key: <ADMIN_KEY>` and body `{"id": "<uid>"}`.
+  - **CRITICAL SAFEGUARD**: Never delete admin accounts (`"Andrés Parra Charris"` or any user with `admin: true`). The system enforces cascade cleanup on `db.users`, `db.creds`, `db.subs`, `db.invites`, and `/data/state-<uid>.json`.
 
 ### 3. WebAuthn / Passkeys Requirements
 

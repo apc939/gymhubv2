@@ -1044,6 +1044,35 @@ const routes = {
     json(res, 200, { ok: true, id: u.id, disabled: u.disabled });
   },
 
+  'POST /api/admin/user/delete': async (req, res) => {
+    const admin = requireAdmin(req, res); if (!admin) return;
+    const body = await readBody(req);
+    const u = db.users.find(x => x.id === body.id || (body.id && x.name.toLowerCase() === String(body.id).toLowerCase()));
+    if (!u) return json(res, 404, { error: 'no such user' });
+    if (isAdmin(u)) return json(res, 400, { error: 'cannot delete an admin' });
+
+    // 1. Remove live presence
+    presence.delete(u.id);
+
+    // 2. Remove credentials, subscriptions, and user record
+    db.users = db.users.filter(x => x.id !== u.id);
+    db.creds = db.creds.filter(c => c.userId !== u.id);
+    db.subs = db.subs.filter(s => s.userId !== u.id);
+
+    // 3. Remove or unlink associated invites
+    db.invites = db.invites.filter(i => i.usedBy !== u.id && i.code !== u.invitedBy);
+
+    // 4. Atomic delete of patient state file if exists
+    try {
+      const pFile = stateFile(u.id);
+      if (fs.existsSync(pFile)) fs.unlinkSync(pFile);
+    } catch {}
+
+    saveDb();
+    audit(req, 'admin.user.delete', { user: admin, target: u });
+    json(res, 200, { ok: true, id: u.id, name: u.name });
+  },
+
   'GET /api/admin/invites': async (req, res) => {
     if (!requireAdmin(req, res)) return;
     // resolve usedBy uid → name for display

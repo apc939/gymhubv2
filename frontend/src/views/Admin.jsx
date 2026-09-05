@@ -56,11 +56,23 @@ function UserDetail({ id, onChanged, close }) {
       <div className="tile"><div className="l">Last sync</div><div className="v" style={{ fontSize: '.95rem' }}>{rel(d.lastSync)}</div></div>
     </div>
     {!u.admin && <>
-      <button className={'btn ' + (u.disabled ? 'primary' : 'danger')} style={{ margin: '12px 0 4px' }}
-        onClick={() => u.disabled ? setDisabled(false)
-          : confirmSheet({ title: 'Disable ' + u.name + '?', message: 'They are signed out everywhere and can no longer sync or log in until re-enabled. Their data stays.', confirmText: 'Disable', danger: true, onConfirm: () => setDisabled(true) })}>
-        {u.disabled ? 'Enable account' : 'Disable account'}</button>
-      <div className="adm-hint">{u.disabled ? 'Enabling lets them sign in and sync again.' : 'Disabling signs them out everywhere and blocks sign-in. Nothing is deleted.'}</div>
+      <div className="row" style={{ gap: 8, margin: '12px 0 4px' }}>
+        <button className={'btn ' + (u.disabled ? 'primary' : 'secondary')} style={{ flex: 1 }}
+          onClick={() => u.disabled ? setDisabled(false)
+            : confirmSheet({ title: 'Disable ' + u.name + '?', message: 'They are signed out everywhere and can no longer sync or log in until re-enabled. Their data stays.', confirmText: 'Disable', danger: true, onConfirm: () => setDisabled(true) })}>
+          {u.disabled ? 'Enable account' : 'Disable account'}</button>
+        <button className="btn danger" style={{ flex: 1 }}
+          onClick={() => confirmSheet({
+            title: 'Delete ' + u.name + '?',
+            message: 'All passkeys, prescriptions, and logged workouts for this user will be permanently deleted. This cannot be undone.',
+            confirmText: 'Delete',
+            danger: true,
+            onConfirm: () => api('/api/admin/user/delete', { method: 'POST', body: JSON.stringify({ id: u.id }) })
+              .then(() => { toast('User ' + u.name + ' deleted'); onChanged(); close() })
+              .catch(e => toast(e.message))
+          })}>Delete user</button>
+      </div>
+      <div className="adm-hint">{u.disabled ? 'Enabling lets them sign in and sync again.' : 'Disabling keeps data but blocks sign-in. Delete removes the account permanently.'}</div>
     </>}
     <h4 className="sec">Workout history</h4>
     {d.workouts.length ? <div className="list" style={{ gap: 0 }}>
