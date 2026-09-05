@@ -58,11 +58,11 @@ const CANONICAL_ARCHETYPE = {
   '1': 'nivel1',
   'bandas': 'nivel1',
 
-  'nivel2': 'postural',
-  'postural': 'postural',
-  '2': 'postural',
-  'columna': 'postural',
-  'lumbar': 'postural'
+  'nivel2': 'nivel2',
+  'postural': 'nivel2',
+  '2': 'nivel2',
+  'columna': 'nivel2',
+  'lumbar': 'nivel2'
 };
 
 const DEFAULT_ORIGIN = 'https://web-production-5a975.up.railway.app';
