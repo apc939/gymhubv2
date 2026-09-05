@@ -1,0 +1,59 @@
+{
+  "id": "rx_clinica_post_parto",
+  "name": "Post-Parto (Core y Suelo Pélvico)",
+  "emoji": "🤱",
+  "prog": "linear",
+  "meta": {
+    "target": "post_parto",
+    "description": "Recuperación de la faja abdominal (diástasis recti) y suelo pélvico. Cero impacto, intensidad progresiva.",
+    "durationMin": 20,
+    "frequencyDays": 4
+  },
+  "ex": [
+    {
+      "id": "0276",
+      "name": "Dead Bug (Activación Core lumbopélvico)",
+      "sets": 3,
+      "reps": 10,
+      "mode": "reps",
+      "weight": 0,
+      "restSec": 60,
+      "prog": "linear"
+    },
+    {
+      "id": "3013",
+      "name": "Puente de glúteos en suelo",
+      "sets": 3,
+      "reps": 12,
+      "mode": "reps",
+      "weight": 0,
+      "restSec": 45,
+      "prog": "linear"
+    },
+    {
+      "id": "3544",
+      "name": "Plancha lateral inclinada (Side Plank)",
+      "sets": 3,
+      "reps": 20,
+      "mode": "time",
+      "weight": 0,
+      "restSec": 45,
+      "prog": "linear"
+    },
+    {
+      "id": "0990",
+      "name": "Remo sentado con banda",
+      "sets": 3,
+      "reps": 15,
+      "mode": "reps",
+      "weight": 0,
+      "restSec": 45,
+      "prog": "linear"
+    }
+  ],
+  "week": {
+    "1": "rx_clinica_post_parto",
+    "3": "rx_clinica_post_parto",
+    "5": "rx_clinica_post_parto"
+  }
+}

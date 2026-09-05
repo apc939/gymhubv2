@@ -1,0 +1,59 @@
+{
+  "id": "rx_clinica_lumbalgia",
+  "name": "Dolor Lumbar Crónico",
+  "emoji": "🧘",
+  "prog": "linear",
+  "meta": {
+    "target": "lumbalgia",
+    "description": "Higiene postural, fortalecimiento del core (McGill Big 3 adaptado) y movilidad pélvica.",
+    "durationMin": 25,
+    "frequencyDays": 4
+  },
+  "ex": [
+    {
+      "id": "0276",
+      "name": "Bird Dog (Core profundo)",
+      "sets": 3,
+      "reps": 10,
+      "mode": "reps",
+      "weight": 0,
+      "restSec": 45,
+      "prog": "linear"
+    },
+    {
+      "id": "3544",
+      "name": "Side Plank Inclinada (Plancha lateral)",
+      "sets": 3,
+      "reps": 20,
+      "mode": "time",
+      "weight": 0,
+      "restSec": 45,
+      "prog": "linear"
+    },
+    {
+      "id": "3013",
+      "name": "Low Glute Bridge on floor",
+      "sets": 3,
+      "reps": 12,
+      "mode": "reps",
+      "weight": 0,
+      "restSec": 45,
+      "prog": "linear"
+    },
+    {
+      "id": "0988",
+      "name": "Remo bajo de pie con banda",
+      "sets": 3,
+      "reps": 15,
+      "mode": "reps",
+      "weight": 0,
+      "restSec": 60,
+      "prog": "linear"
+    }
+  ],
+  "week": {
+    "1": "rx_clinica_lumbalgia",
+    "3": "rx_clinica_lumbalgia",
+    "5": "rx_clinica_lumbalgia"
+  }
+}

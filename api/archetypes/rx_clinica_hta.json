@@ -1,0 +1,59 @@
+{
+  "id": "rx_clinica_hta",
+  "name": "Hipertensión Arterial (Controlado)",
+  "emoji": "❤️",
+  "prog": "linear",
+  "meta": {
+    "target": "hipertension",
+    "description": "Entrenamiento de fuerza concurrente, evitando la maniobra de Valsalva e isometrías prolongadas. Ritmo controlado.",
+    "durationMin": 25,
+    "frequencyDays": 3
+  },
+  "ex": [
+    {
+      "id": "3132",
+      "name": "Wall Sit (Sentadilla Isométrica controlada)",
+      "sets": 3,
+      "reps": 10,
+      "mode": "reps",
+      "weight": 0,
+      "restSec": 90,
+      "prog": "linear"
+    },
+    {
+      "id": "0310",
+      "name": "Elevación frontal/lateral con mancuernas",
+      "sets": 3,
+      "reps": 12,
+      "mode": "reps",
+      "weight": 2,
+      "restSec": 60,
+      "prog": "linear"
+    },
+    {
+      "id": "0989",
+      "name": "Press de pecho con banda elástica",
+      "sets": 3,
+      "reps": 12,
+      "mode": "reps",
+      "weight": 0,
+      "restSec": 60,
+      "prog": "linear"
+    },
+    {
+      "id": "3013",
+      "name": "Puente de glúteos en suelo",
+      "sets": 3,
+      "reps": 15,
+      "mode": "reps",
+      "weight": 0,
+      "restSec": 60,
+      "prog": "linear"
+    }
+  ],
+  "week": {
+    "1": "rx_clinica_hta",
+    "3": "rx_clinica_hta",
+    "5": "rx_clinica_hta"
+  }
+}
