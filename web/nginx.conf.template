@@ -15,8 +15,8 @@ server {
     add_header Referrer-Policy "same-origin" always;
     add_header Content-Security-Policy "frame-ancestors 'none'" always;
 
-    # Internal DNS resolvers: host system DNS (via entrypoint), Railway private DNS, Docker DNS, and fallbacks
-    resolver ${NGINX_LOCAL_RESOLVERS} [fd12::10] 127.0.0.11 1.1.1.1 valid=5s ipv6=on;
+    # Internal DNS resolvers only: host system DNS (via entrypoint), Railway private DNS, and Docker DNS
+    resolver ${NGINX_LOCAL_RESOLVERS} [fd12::10] 127.0.0.11 valid=5s ipv6=on;
 
     # API → backend container.
     # Dynamic DNS resolution via Nginx variable prevents caching stale IP addresses.

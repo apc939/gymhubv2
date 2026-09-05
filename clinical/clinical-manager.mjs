@@ -99,12 +99,26 @@ async function apiRequest(endpoint, options = {}) {
     'x-admin-key': ADMIN_KEY,
     ...(options.headers || {})
   };
-  const res = await fetch(url, { ...options, headers });
-  if (!res.ok) {
-    const errText = await res.text().catch(() => '');
-    throw new Error(`Error API (${res.status}): ${errText}`);
+  let lastErr;
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      const res = await fetch(url, { ...options, headers });
+      if (res.ok) return await res.json();
+      const errText = await res.text().catch(() => '');
+      if (res.status === 502 && attempt === 1) {
+        await new Promise(r => setTimeout(r, 400));
+        continue;
+      }
+      throw new Error(`Error API (${res.status}): ${errText}`);
+    } catch (e) {
+      lastErr = e;
+      if (attempt === 1) {
+        await new Promise(r => setTimeout(r, 400));
+        continue;
+      }
+      throw lastErr;
+    }
   }
-  return res.json();
 }
 
 function runDockerApiCmd(cmd) {
