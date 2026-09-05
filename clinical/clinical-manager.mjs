@@ -192,7 +192,8 @@ async function listPatients() {
     const u = db.users[idx];
     const state = await getUserState(u.id);
     const routinesCount = state?.routines?.length || u.workouts || 0;
-    const currentRoutine = state?.routines?.[0]?.name || 'Sin prescripción';
+    const routines = state?.routines?.map(r => r.name).join(', ');
+    const currentRoutine = routines || 'Sin prescripción';
     const workoutsCount = state?.workouts?.length ?? u.workouts ?? 0;
     const lastWorkout = state?.workouts?.[state.workouts.length - 1];
     const lastDate = lastWorkout ? lastWorkout.d : (u.lastWorkout || 'Nunca');
