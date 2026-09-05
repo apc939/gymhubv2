@@ -1,4 +1,12 @@
 #!/bin/sh
+# Prevent web from proxying to itself if misconfigured in Railway
+if [ "$BACKEND" = "web" ] || [ "$BACKEND" = "web.railway.internal" ]; then
+  export BACKEND="api.railway.internal"
+fi
+
+# Ensure BACKEND has a default if empty
+export BACKEND="${BACKEND:-api}"
+
 # Ensure BACKEND_PORT has a valid default (3000)
 export BACKEND_PORT="${BACKEND_PORT:-3000}"
 
