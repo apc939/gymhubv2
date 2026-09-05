@@ -1,0 +1,11 @@
+#!/bin/sh
+# Ensure BACKEND_PORT has a valid default (3000)
+export BACKEND_PORT="${BACKEND_PORT:-3000}"
+
+# If BACKEND was set as "host:port", split it cleanly
+case "$BACKEND" in
+  *:*)
+    export BACKEND_PORT="${BACKEND##*:}"
+    export BACKEND="${BACKEND%:*}"
+    ;;
+esac

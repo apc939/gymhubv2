@@ -43,11 +43,14 @@ LABEL maintainer="Duarte Santos https://gitlab.com/DuarteSantos8" \
     org.opencontainers.image.revision=$VCS_REF \
     org.opencontainers.image.created=$BUILD_DATE
 
+COPY web/18-clean-backend-env.envsh /docker-entrypoint.d/18-clean-backend-env.envsh
+RUN chmod +x /docker-entrypoint.d/18-clean-backend-env.envsh
 COPY web/nginx.conf.template /etc/nginx/templates/default.conf.template
 COPY --from=build /app/frontend/dist /usr/share/nginx/html
 # exercise media (img/gif) is mounted at runtime from the media volume
 
 # Set Default ENVs for nginx
+ENV NGINX_ENTRYPOINT_LOCAL_RESOLVERS=1
 ENV NGINX_PORT=80
 ENV PORT=80
 ENV BACKEND=api
