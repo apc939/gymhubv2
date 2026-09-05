@@ -15,6 +15,9 @@ server {
     add_header Referrer-Policy "same-origin" always;
     add_header Content-Security-Policy "frame-ancestors 'none'" always;
 
+    # Railway private DNS and Docker embedded DNS
+    resolver [fd12::10] 127.0.0.11 1.1.1.1 valid=10s ipv6=on;
+
     # API → backend container.
     # `^~` so this prefix beats the regex locations below: without it a request for a path such
     # as /api/anything.json would be matched by the \.(js|css|json|html)$ block instead and be
