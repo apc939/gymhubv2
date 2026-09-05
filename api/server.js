@@ -6,6 +6,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import https from 'node:https';
 import dns from 'node:dns';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 import {
   generateRegistrationOptions, verifyRegistrationResponse,
   generateAuthenticationOptions, verifyAuthenticationResponse
