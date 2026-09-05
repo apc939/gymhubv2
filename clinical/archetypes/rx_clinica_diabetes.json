@@ -1,0 +1,59 @@
+{
+  "id": "rx_clinica_diabetes",
+  "name": "Diabetes Tipo 2",
+  "emoji": "🩸",
+  "prog": "linear",
+  "meta": {
+    "target": "diabetes_tipo_2",
+    "description": "Entrenamiento de hipertrofia y fuerza para mejorar la sensibilidad a la insulina y la captación de glucosa.",
+    "durationMin": 35,
+    "frequencyDays": 4
+  },
+  "ex": [
+    {
+      "id": "1410",
+      "name": "Barbell lateral lunge / Dumbbell lunge",
+      "sets": 3,
+      "reps": 12,
+      "mode": "reps",
+      "weight": 10,
+      "restSec": 60,
+      "prog": "linear"
+    },
+    {
+      "id": "0293",
+      "name": "Dumbbell bent over row",
+      "sets": 3,
+      "reps": 12,
+      "mode": "reps",
+      "weight": 8,
+      "restSec": 60,
+      "prog": "linear"
+    },
+    {
+      "id": "1289",
+      "name": "Press inclinado con mancuernas",
+      "sets": 3,
+      "reps": 12,
+      "mode": "reps",
+      "weight": 8,
+      "restSec": 60,
+      "prog": "linear"
+    },
+    {
+      "id": "3544",
+      "name": "Bodyweight incline side plank (Plancha)",
+      "sets": 3,
+      "reps": 30,
+      "mode": "time",
+      "weight": 0,
+      "restSec": 45,
+      "prog": "linear"
+    }
+  ],
+  "week": {
+    "1": "rx_clinica_diabetes",
+    "3": "rx_clinica_diabetes",
+    "5": "rx_clinica_diabetes"
+  }
+}

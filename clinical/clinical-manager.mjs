@@ -44,7 +44,18 @@ const ARCHETYPE_MAP = {
   'postural': 'nivel2_salud_postural.json',
   '2': 'nivel2_salud_postural.json',
   'columna': 'nivel2_salud_postural.json',
-  'lumbar': 'nivel2_salud_postural.json'
+  'lumbar': 'nivel2_salud_postural.json',
+
+  'adulto_mayor': 'rx_clinica_adulto_mayor.json',
+  'diabetes': 'rx_clinica_diabetes.json',
+  'gestantes': 'rx_clinica_gestantes.json',
+  'hta': 'rx_clinica_hta.json',
+  'rodilla': 'rx_clinica_lesion_rodilla.json',
+  'lumbalgia': 'rx_clinica_lumbalgia.json',
+  'obesidad': 'rx_clinica_obesidad.json',
+  'osteoporosis': 'rx_clinica_osteoporosis.json',
+  'post_parto': 'rx_clinica_post_parto.json',
+  'sop': 'rx_clinica_sop.json'
 };
 
 const CANONICAL_ARCHETYPE = {
@@ -62,7 +73,18 @@ const CANONICAL_ARCHETYPE = {
   'postural': 'nivel2',
   '2': 'nivel2',
   'columna': 'nivel2',
-  'lumbar': 'nivel2'
+  'lumbar': 'nivel2',
+
+  'adulto_mayor': 'adulto_mayor',
+  'diabetes': 'diabetes',
+  'gestantes': 'gestantes',
+  'hta': 'hta',
+  'rodilla': 'rodilla',
+  'lumbalgia': 'lumbalgia',
+  'obesidad': 'obesidad',
+  'osteoporosis': 'osteoporosis',
+  'post_parto': 'post_parto',
+  'sop': 'sop'
 };
 
 const DEFAULT_ORIGIN = 'https://web-production-5a975.up.railway.app';

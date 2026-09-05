@@ -1,0 +1,59 @@
+{
+  "id": "rx_clinica_obesidad",
+  "name": "Obesidad y Síndrome Metabólico",
+  "emoji": "⚖️",
+  "prog": "linear",
+  "meta": {
+    "target": "obesidad_metabolico",
+    "description": "Bajo impacto articular para preservar rodillas y tobillos. Enfoque en grandes grupos musculares para maximizar el gasto calórico y adaptación.",
+    "durationMin": 30,
+    "frequencyDays": 4
+  },
+  "ex": [
+    {
+      "id": "1410",
+      "name": "Goblet Squat adaptado (Lunge/Step bajo impacto)",
+      "sets": 3,
+      "reps": 12,
+      "mode": "reps",
+      "weight": 5,
+      "restSec": 60,
+      "prog": "linear"
+    },
+    {
+      "id": "0990",
+      "name": "Remo sentado con banda (Seated Band Row)",
+      "sets": 3,
+      "reps": 15,
+      "mode": "reps",
+      "weight": 0,
+      "restSec": 45,
+      "prog": "linear"
+    },
+    {
+      "id": "3013",
+      "name": "Puente de glúteos en suelo",
+      "sets": 3,
+      "reps": 15,
+      "mode": "reps",
+      "weight": 0,
+      "restSec": 45,
+      "prog": "linear"
+    },
+    {
+      "id": "1289",
+      "name": "Press de pecho inclinado con mancuernas",
+      "sets": 3,
+      "reps": 12,
+      "mode": "reps",
+      "weight": 5,
+      "restSec": 60,
+      "prog": "linear"
+    }
+  ],
+  "week": {
+    "1": "rx_clinica_obesidad",
+    "3": "rx_clinica_obesidad",
+    "5": "rx_clinica_obesidad"
+  }
+}

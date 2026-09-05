@@ -1,0 +1,59 @@
+{
+  "id": "rx_clinica_lesion_rodilla",
+  "name": "Recuperación Lesión Rodilla",
+  "emoji": "🦵",
+  "prog": "linear",
+  "meta": {
+    "target": "post_lesion_rodilla",
+    "description": "Fortalecimiento de cuádriceps, isquiosurales y glúteo medio para estabilidad femoropatelar. Fase tardía/avanzada.",
+    "durationMin": 30,
+    "frequencyDays": 3
+  },
+  "ex": [
+    {
+      "id": "3132",
+      "name": "Wall Sit (Sentadilla Isométrica) / Silla",
+      "sets": 3,
+      "reps": 20,
+      "mode": "time",
+      "weight": 0,
+      "restSec": 60,
+      "prog": "linear"
+    },
+    {
+      "id": "1009",
+      "name": "Peso muerto piernas semirrígidas (Isquiosurales)",
+      "sets": 3,
+      "reps": 10,
+      "mode": "reps",
+      "weight": 5,
+      "restSec": 60,
+      "prog": "linear"
+    },
+    {
+      "id": "0999",
+      "name": "Band single leg calf raise",
+      "sets": 3,
+      "reps": 15,
+      "mode": "reps",
+      "weight": 0,
+      "restSec": 45,
+      "prog": "linear"
+    },
+    {
+      "id": "3013",
+      "name": "Puente de glúteos en suelo",
+      "sets": 3,
+      "reps": 15,
+      "mode": "reps",
+      "weight": 0,
+      "restSec": 45,
+      "prog": "linear"
+    }
+  ],
+  "week": {
+    "1": "rx_clinica_lesion_rodilla",
+    "3": "rx_clinica_lesion_rodilla",
+    "5": "rx_clinica_lesion_rodilla"
+  }
+}

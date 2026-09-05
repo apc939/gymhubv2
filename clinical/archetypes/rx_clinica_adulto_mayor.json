@@ -1,0 +1,69 @@
+{
+  "id": "rx_clinica_adulto_mayor",
+  "name": "Adulto Mayor (Prevención Sarcopenia)",
+  "emoji": "👵👴",
+  "prog": "linear",
+  "meta": {
+    "target": "adulto_mayor",
+    "description": "Enfoque en fuerza de miembros inferiores, propiocepción y prevención de caídas. Movimientos controlados y seguros.",
+    "durationMin": 20,
+    "frequencyDays": 3
+  },
+  "ex": [
+    {
+      "id": "3132",
+      "name": "Sentadilla asistida / con apoyo a silla",
+      "sets": 3,
+      "reps": 10,
+      "mode": "reps",
+      "weight": 0,
+      "restSec": 60,
+      "prog": "linear"
+    },
+    {
+      "id": "0999",
+      "name": "Elevación de talones (Calf Raise asistido)",
+      "sets": 3,
+      "reps": 12,
+      "mode": "reps",
+      "weight": 0,
+      "restSec": 60,
+      "prog": "linear"
+    },
+    {
+      "id": "0988",
+      "name": "Remo bajo de pie con banda",
+      "sets": 3,
+      "reps": 10,
+      "mode": "reps",
+      "weight": 0,
+      "restSec": 60,
+      "prog": "linear"
+    },
+    {
+      "id": "3785",
+      "name": "Flexiones inclinadas (apoyo en mesa/pared)",
+      "sets": 3,
+      "reps": 8,
+      "mode": "reps",
+      "weight": 0,
+      "restSec": 60,
+      "prog": "linear"
+    },
+    {
+      "id": "0276",
+      "name": "Bird Dog (Variación controlada de core)",
+      "sets": 2,
+      "reps": 10,
+      "mode": "reps",
+      "weight": 0,
+      "restSec": 60,
+      "prog": "linear"
+    }
+  ],
+  "week": {
+    "1": "rx_clinica_adulto_mayor",
+    "3": "rx_clinica_adulto_mayor",
+    "5": "rx_clinica_adulto_mayor"
+  }
+}

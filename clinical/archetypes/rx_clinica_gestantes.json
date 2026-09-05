@@ -1,0 +1,59 @@
+{
+  "id": "rx_clinica_gestantes",
+  "name": "Gestantes (Prenatal)",
+  "emoji": "🤰",
+  "prog": "linear",
+  "meta": {
+    "target": "gestantes",
+    "description": "Fortalecimiento general y mantenimiento. Sin ejercicios en decúbito supino después del 1er trimestre, evitando Valsalva.",
+    "durationMin": 25,
+    "frequencyDays": 3
+  },
+  "ex": [
+    {
+      "id": "3785",
+      "name": "Flexiones inclinadas (apoyo en mesa/pared)",
+      "sets": 3,
+      "reps": 10,
+      "mode": "reps",
+      "weight": 0,
+      "restSec": 60,
+      "prog": "linear"
+    },
+    {
+      "id": "0285",
+      "name": "Dumbbell alternate biceps curl",
+      "sets": 3,
+      "reps": 12,
+      "mode": "reps",
+      "weight": 3,
+      "restSec": 60,
+      "prog": "linear"
+    },
+    {
+      "id": "0988",
+      "name": "Remo con banda (Band Row)",
+      "sets": 3,
+      "reps": 15,
+      "mode": "reps",
+      "weight": 0,
+      "restSec": 60,
+      "prog": "linear"
+    },
+    {
+      "id": "1410",
+      "name": "Lunge lateral adaptado",
+      "sets": 2,
+      "reps": 10,
+      "mode": "reps",
+      "weight": 0,
+      "restSec": 60,
+      "prog": "linear"
+    }
+  ],
+  "week": {
+    "1": "rx_clinica_gestantes",
+    "3": "rx_clinica_gestantes",
+    "5": "rx_clinica_gestantes"
+  }
+}

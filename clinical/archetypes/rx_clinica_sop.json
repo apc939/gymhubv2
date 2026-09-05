@@ -1,0 +1,69 @@
+{
+  "id": "rx_clinica_sop",
+  "name": "Síndrome de Ovario Poliquístico (SOP)",
+  "emoji": "🌸",
+  "prog": "linear",
+  "meta": {
+    "target": "sop_endocrino",
+    "description": "Entrenamiento concurrente de fuerza para equilibrio hormonal y manejo de resistencia a la insulina.",
+    "durationMin": 40,
+    "frequencyDays": 4
+  },
+  "ex": [
+    {
+      "id": "1004",
+      "name": "Band Squat / Goblet Squat",
+      "sets": 3,
+      "reps": 12,
+      "mode": "reps",
+      "weight": 5,
+      "restSec": 60,
+      "prog": "linear"
+    },
+    {
+      "id": "0293",
+      "name": "Dumbbell bent over row",
+      "sets": 3,
+      "reps": 12,
+      "mode": "reps",
+      "weight": 8,
+      "restSec": 60,
+      "prog": "linear"
+    },
+    {
+      "id": "0310",
+      "name": "Dumbbell front/lateral raise",
+      "sets": 3,
+      "reps": 12,
+      "mode": "reps",
+      "weight": 3,
+      "restSec": 60,
+      "prog": "linear"
+    },
+    {
+      "id": "3544",
+      "name": "Bodyweight side plank",
+      "sets": 3,
+      "reps": 30,
+      "mode": "time",
+      "weight": 0,
+      "restSec": 60,
+      "prog": "linear"
+    },
+    {
+      "id": "0989",
+      "name": "Press de pecho con banda / mancuerna",
+      "sets": 3,
+      "reps": 12,
+      "mode": "reps",
+      "weight": 5,
+      "restSec": 60,
+      "prog": "linear"
+    }
+  ],
+  "week": {
+    "1": "rx_clinica_sop",
+    "3": "rx_clinica_sop",
+    "5": "rx_clinica_sop"
+  }
+}

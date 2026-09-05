@@ -1,0 +1,59 @@
+{
+  "id": "rx_clinica_osteoporosis",
+  "name": "Osteoporosis / Osteopenia",
+  "emoji": "🦴",
+  "prog": "linear",
+  "meta": {
+    "target": "osteoporosis",
+    "description": "Fuerza y carga mecánica axial controlada para estimular la osteogénesis, evitando flexión espinal extrema.",
+    "durationMin": 30,
+    "frequencyDays": 3
+  },
+  "ex": [
+    {
+      "id": "1009",
+      "name": "Peso muerto piernas semirrígidas (con banda/mancuernas)",
+      "sets": 3,
+      "reps": 10,
+      "mode": "reps",
+      "weight": 5,
+      "restSec": 90,
+      "prog": "linear"
+    },
+    {
+      "id": "3132",
+      "name": "Sentadilla asistida / con apoyo a silla",
+      "sets": 3,
+      "reps": 10,
+      "mode": "reps",
+      "weight": 0,
+      "restSec": 60,
+      "prog": "linear"
+    },
+    {
+      "id": "0310",
+      "name": "Elevación frontal/hombros con mancuernas",
+      "sets": 3,
+      "reps": 12,
+      "mode": "reps",
+      "weight": 2,
+      "restSec": 60,
+      "prog": "linear"
+    },
+    {
+      "id": "3561",
+      "name": "Glute bridge march",
+      "sets": 3,
+      "reps": 16,
+      "mode": "reps",
+      "weight": 0,
+      "restSec": 60,
+      "prog": "linear"
+    }
+  ],
+  "week": {
+    "1": "rx_clinica_osteoporosis",
+    "3": "rx_clinica_osteoporosis",
+    "5": "rx_clinica_osteoporosis"
+  }
+}
