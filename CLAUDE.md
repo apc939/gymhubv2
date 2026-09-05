@@ -125,7 +125,50 @@ notification code; it documents the exact env-var contract (`RP_ID`, `ORIGIN`, `
 output), `api`, `web` (multi-stage build of `frontend/` served by nginx, which also proxies
 `/api` → `api` and serves the shared media volume — single origin, required for passkeys).
 `web/nginx.conf.template` is rendered from env vars at container start (`NGINX_PORT`, `BACKEND`,
-`PORT`), so host/port remapping works against prebuilt images without a rebuild.
+`BACKEND_PORT`, `PORT`), with dynamic DNS resolution so host/port remapping works against prebuilt
+images without a rebuild.
+
+### Railway Production Architecture (GymHub Deployment)
+
+When deploying to Railway (e.g. `https://web-production-5a975.up.railway.app`):
+
+#### 1. Service `api` (Backend & Clinical Engine)
+- **Source / Root Directory**: `/api`
+- **Builder**: `Dockerfile`
+- **Persistent Volume**: Mount `/data` (persists `db.json`, `audit.log`, user states, and archetypes).
+- **Environment Variables**:
+  - `PORT`: `3000`
+  - `DATA_DIR`: `/data`
+  - `ORIGIN`: `https://<public-web-domain>` (e.g. `https://web-production-5a975.up.railway.app`)
+  - `RP_ID`: `<public-web-hostname>` (e.g. `web-production-5a975.up.railway.app` — no scheme, no port)
+  - `ADMIN_KEY`: Secret key for remote clinical manager administration (e.g. `gymhub-clinical-admin-2026`)
+- **Network Dual-Stack**: `server.listen({ port: PORT, host: '::', ipv6Only: false })` ensures it accepts both Railway private IPv6 (`fd12:...`) and IPv4.
+- **ES Module Note**: `api/package.json` contains `"type": "module"`. Always use `fileURLToPath(import.meta.url)` instead of CommonJS `__dirname`.
+- **Auto-Admin**: Users named `"Andrés Parra Charris"` or the first registered user are automatically granted Master Admin privileges.
+
+#### 2. Service `web` (Frontend + Nginx Dynamic Gateway)
+- **Source / Root Directory**: `/`
+- **Builder**: `Dockerfile` (`web/Dockerfile`)
+- **Public Domain**: Generated in Railway Settings → Networking (e.g. `web-production-5a975.up.railway.app`).
+- **Environment Variables**:
+  - `PORT`: `80` (**CRITICAL**: Railway routes public internet traffic to `PORT`. Must be `80`, never `3000`).
+  - `BACKEND`: `api.railway.internal` (**CRITICAL**: Must point to `api`, never `${{RAILWAY_PRIVATE_DOMAIN}}` which refers to `web` itself).
+  - `BACKEND_PORT`: `3000` (Internal port of the `api` service).
+- **Dynamic DNS & Stale IP Prevention**:
+  - In Nginx, static `proxy_pass` caches DNS indefinitely on boot. When `api` redeploys and receives a new IP, static Nginx causes `502 Bad Gateway` / `504 Gateway Time-out`.
+  - Solved by using dynamic variable resolution (`set $backend_upstream "${BACKEND}:${BACKEND_PORT}"; proxy_pass http://$backend_upstream;`) combined with `resolver ${NGINX_LOCAL_RESOLVERS} [fd12::10] 127.0.0.11 1.1.1.1 valid=5s ipv6=on;`.
+  - `web/18-clean-backend-env.envsh` automatically sanitizes env vars on boot, ensuring `BACKEND` never points to `web.railway.internal` and defaults `BACKEND_PORT=3000`.
+- **Exercise Media**: `web/Dockerfile` bakes in `VITE_IMG_BASE` and `VITE_GIF_BASE` pointing to jsDelivr CDN for cloud environments where local media volumes are not present.
+
+#### 3. Clinical Architecture & Manager (`clinical/`)
+- Clinical archetypes are maintained in `clinical/archetypes/` and bundled inside `api/archetypes/` (`nivel0_sedentario.json`, `nivel1_bandas_mancuernas.json`, `nivel2_salud_postural.json`).
+- `clinical/clinical-manager.mjs` executes operations directly against Railway production using HTTPS and `x-admin-key`:
+  ```bash
+  node clinical/clinical-manager.mjs list
+  node clinical/clinical-manager.mjs invite "Nombre Paciente" nivel0
+  node clinical/clinical-manager.mjs assign "<user_id>" nivel1
+  node clinical/clinical-manager.mjs report "<user_id>"
+  ```
 
 ## Guidelines from CONTRIBUTING.md worth knowing before changing code
 
@@ -134,3 +177,4 @@ output), `api`, `web` (multi-stage build of `frontend/` served by nginx, which a
 - Don't commit `media/` or `data/` (gitignored).
 - Training-logic changes (progression, 1RM, session read-back) need a unit test in `src/lib`
   beside the code, not just manual clicking-through.
+
