@@ -1,0 +1,67 @@
+{
+  "id": "rx_clinica_postural",
+  "name": "Salud Postural & Columna (Anti-Sedentarismo)",
+  "emoji": "🛡️",
+  "prog": "linear",
+  "meta": {
+    "target": "postura_columna",
+    "description": "Prescripción médica enfocada en descompresión espinal, fortalecimiento del glúteo medio/mayor y estabilización escapular para oficinistas y sedentarios.",
+    "durationMin": 20,
+    "frequencyDays": 3
+  },
+  "ex": [
+    {
+      "id": "1422",
+      "name": "Retroversión pélvica con elevación a puente",
+      "sets": 3,
+      "reps": 12,
+      "mode": "reps",
+      "weight": 0,
+      "restSec": 60,
+      "prog": "linear"
+    },
+    {
+      "id": "3541",
+      "name": "Elevaciones en Y (Activación trapecio inferior/medio)",
+      "sets": 3,
+      "reps": 12,
+      "mode": "reps",
+      "weight": 1,
+      "restSec": 60,
+      "prog": "linear"
+    },
+    {
+      "id": "3158",
+      "name": "Remo de pie (retracción escapular isométrica)",
+      "sets": 3,
+      "reps": 10,
+      "mode": "reps",
+      "weight": 0,
+      "restSec": 60,
+      "prog": "linear"
+    },
+    {
+      "id": "3544",
+      "name": "Plancha lateral modificada (apoyo en rodillas)",
+      "sets": 3,
+      "reps": 20,
+      "mode": "time",
+      "weight": 0,
+      "restSec": 60
+    },
+    {
+      "id": "0276",
+      "name": "Dead Bug (Estabilidad lumbopélvica controlada)",
+      "sets": 3,
+      "reps": 10,
+      "mode": "reps",
+      "weight": 0,
+      "restSec": 60
+    }
+  ],
+  "week": {
+    "1": "rx_clinica_postural",
+    "3": "rx_clinica_postural",
+    "5": "rx_clinica_postural"
+  }
+}

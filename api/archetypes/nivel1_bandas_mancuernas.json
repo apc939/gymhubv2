@@ -1,0 +1,77 @@
+{
+  "id": "rx_clinica_nivel_1",
+  "name": "Nivel 1: Adaptación con Cargas (Bandas / Mancuernas)",
+  "emoji": "🔋",
+  "prog": "linear",
+  "meta": {
+    "target": "sedentario_adaptado",
+    "description": "Prescripción médica de transición para pacientes con adherencia básica. Cargas leves a moderadas para estímulo de fuerza y densidad ósea.",
+    "durationMin": 25,
+    "frequencyDays": 3
+  },
+  "ex": [
+    {
+      "id": "1760",
+      "name": "Sentadilla Goblet (Copa con mancuerna liviana o banda)",
+      "sets": 3,
+      "reps": 10,
+      "mode": "reps",
+      "weight": 8,
+      "restSec": 75,
+      "prog": "linear"
+    },
+    {
+      "id": "0289",
+      "name": "Press de pecho con mancuernas (o banda elástica)",
+      "sets": 3,
+      "reps": 10,
+      "mode": "reps",
+      "weight": 6,
+      "restSec": 75,
+      "prog": "linear"
+    },
+    {
+      "id": "0990",
+      "name": "Remo sentado con banda elástica (o mancuerna)",
+      "sets": 3,
+      "reps": 12,
+      "mode": "reps",
+      "weight": 0,
+      "restSec": 60,
+      "prog": "linear"
+    },
+    {
+      "id": "0085",
+      "name": "Peso muerto rumano liviano (bisagra de cadera)",
+      "sets": 3,
+      "reps": 10,
+      "mode": "reps",
+      "weight": 10,
+      "restSec": 75,
+      "prog": "linear"
+    },
+    {
+      "id": "0334",
+      "name": "Elevaciones laterales livianas",
+      "sets": 3,
+      "reps": 12,
+      "mode": "reps",
+      "weight": 3,
+      "restSec": 60
+    },
+    {
+      "id": "3239",
+      "name": "Plancha en rodillas con toques de hombro (Core anti-rotación)",
+      "sets": 3,
+      "reps": 10,
+      "mode": "reps",
+      "weight": 0,
+      "restSec": 60
+    }
+  ],
+  "week": {
+    "1": "rx_clinica_nivel_1",
+    "3": "rx_clinica_nivel_1",
+    "5": "rx_clinica_nivel_1"
+  }
+}
