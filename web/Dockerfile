@@ -49,9 +49,9 @@ COPY --from=build /app/frontend/dist /usr/share/nginx/html
 
 # Set Default ENVs for nginx
 ENV NGINX_PORT=80
+ENV PORT=80
 ENV BACKEND=api
 ENV BACKEND_PORT=3000
-ENV PORT=3000
 # Empty = the CF-Connecting-IP header is dropped before it reaches the API, so it cannot be
 # forged by a direct client. Set to $http_cf_connecting_ip only when Cloudflare is really in
 # front. Defined here too, not just in compose, so the template always renders for anyone
