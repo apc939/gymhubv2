@@ -12,7 +12,21 @@ GymHub is a self-hosted gym & body-weight tracker PWA tailored for clinical and 
 - **Clinical Manager**: `clinical/clinical-manager.mjs` manages patient routines and clinical archetypes remotely via HTTPS.
 - **Production Host**: Railway (`https://web-production-5a975.up.railway.app`).
 
----
+## Project Layout
+
+- `frontend/` - React 19 + Vite app (`src/views`, `src/components`, `src/store`, `src/lib`). Builds to static files.
+- `api/` - Backend (`server.js`, `user-stats.js`). Node, no framework.
+- `web/` - Multi-stage Dockerfile (builds frontend → nginx) + `nginx.conf.template`.
+- `clinical/` - Clinical archetypes and remote manager scripts.
+- `data/` - Runtime data (users, passkeys, per-user state, session secret). Gitignored.
+
+## Commands
+
+- **Local stack**: `docker compose up -d --build`
+- **Frontend dev server**: `cd frontend && npm install && npm run dev`
+- **Frontend tests**: `cd frontend && npm test`
+- **API tests**: `cd api && npm test`
+- **Production build**: `cd frontend && npm run build`
 
 ## Critical Architecture & Deployment Rules
 
@@ -30,12 +44,9 @@ The app is deployed on Railway across two services:
   - `ORIGIN`: `https://web-production-5a975.up.railway.app`
   - `RP_ID`: `web-production-5a975.up.railway.app` (domain only, no scheme, no port)
   - `ADMIN_KEY`: `gymhub-clinical-admin-2026`
-- **Binding Rule**: Always bind explicitly to dual-stack:
-  ```javascript
-  server.listen({ port: PORT, host: '::', ipv6Only: false }, ...)
-  ```
+- **Binding Rule**: Always bind explicitly to dual-stack: `server.listen({ port: PORT, host: '::', ipv6Only: false }, ...)`
 - **ES Module Rule**: `api/package.json` specifies `"type": "module"`. Never use CommonJS `__dirname`; use `fileURLToPath(import.meta.url)`.
-- **Admin Privilege**: User `"Andrés Parra Charris"` or the first user in `db.users` automatically receives Master Admin privileges (`admin: true`).
+- **Auto-Admin**: User `"Andrés Parra Charris"` or the first user in `db.users` automatically receives Master Admin privileges (`admin: true`).
 
 #### Service `web`
 - **Root Directory**: `/`
@@ -43,48 +54,35 @@ The app is deployed on Railway across two services:
 - **Public Domain**: Assigned in Railway (e.g. `web-production-5a975.up.railway.app`).
 - **Required Environment Variables**:
   - `PORT`: `80` (**CRITICAL**: Railway routes internet traffic to `PORT`. Must be `80`, never `3000`).
-  - `BACKEND`: `api.railway.internal` (**CRITICAL**: Must point to `api`, never to `web` or `${{RAILWAY_PRIVATE_DOMAIN}}` which points to `web` itself).
-  - `BACKEND_PORT`: `3000` (Port of the `api` container).
-- **Dynamic DNS Resolution**:
-  - Nginx static `proxy_pass http://host:port` caches the resolved IP indefinitely. When `api` restarts, Railway assigns a new internal IP, causing 502/504 errors if Nginx is not dynamic.
-  - Nginx configuration (`web/nginx.conf.template`) must use dynamic variable resolution:
-    ```nginx
-    resolver ${NGINX_LOCAL_RESOLVERS} [fd12::10] 127.0.0.11 1.1.1.1 valid=5s ipv6=on;
-    location ^~ /api/ {
-        set $backend_upstream "${BACKEND}:${BACKEND_PORT}";
-        proxy_pass http://$backend_upstream;
-        ...
-    }
-    ```
-  - `web/18-clean-backend-env.envsh` auto-sanitizes variables at boot, auto-correcting any `web.railway.internal` typo to `api.railway.internal`.
+  - `BACKEND`: `api.railway.internal` (**CRITICAL**: Must point to `api`, never to `web`).
+  - `BACKEND_PORT`: `3000`
+- **Dynamic DNS Resolution**: Nginx configuration (`web/nginx.conf.template`) must use dynamic variable resolution (`resolver`) to prevent stale IPs when the backend restarts. `web/18-clean-backend-env.envsh` auto-sanitizes variables at boot.
 
-### 2. Clinical Archetypes & Remote Management
+### 2. Clinical Features, Archetypes & Remote Management
 
-- Clinical archetypes live in `clinical/archetypes/` and are copied to `api/archetypes/` at build time (`nivel0_sedentario.json`, `nivel1_bandas_mancuernas.json`, `nivel2_salud_postural.json`).
-- `api/server.js` automatically populates `/data/archetypes/` on boot if missing.
-- `clinical/clinical-manager.mjs` connects directly to Railway production using `x-admin-key`:
-  ```bash
-  node clinical/clinical-manager.mjs list
-  node clinical/clinical-manager.mjs invite "Nombre Paciente" nivel0
-  node clinical/clinical-manager.mjs assign "<user_id>" nivel1
-  node clinical/clinical-manager.mjs report "<user_id>"
-  node clinical/clinical-manager.mjs delete "<user_id_o_nombre>"
-  ```
-- **User Deletion Protocol**:
-  - Whenever the user instructs via chat to delete a patient or test user, an agent must execute:
-    `node clinical/clinical-manager.mjs delete "<nombre_o_uid>"`
-    or invoke `POST /api/admin/user/delete` with header `x-admin-key: <ADMIN_KEY>` and body `{"id": "<uid>"}`.
-  - **CRITICAL SAFEGUARD**: Never delete admin accounts (`"Andrés Parra Charris"` or any user with `admin: true`). The system enforces cascade cleanup on `db.users`, `db.creds`, `db.subs`, `db.invites`, and `/data/state-<uid>.json`.
+- **Archetypes**: Clinical archetypes live in `clinical/archetypes/` and are copied to `api/archetypes/` at build time. `api/server.js` auto-populates `/data/archetypes/` on boot if missing.
+- **Remote Manager**: `clinical/clinical-manager.mjs` connects directly to Railway production using `x-admin-key`.
+- **User Deletion Protocol**: Never delete admin accounts. Agent must execute `node clinical/clinical-manager.mjs delete "<nombre_o_uid>"` or invoke `POST /api/admin/user/delete`.
+- **Cardio & Pain Tracking**:
+  - `frontend/src/components/CardioLogSheet.jsx`: Handles cardio sessions without pain logging.
+  - `frontend/src/components/PainLogSheet.jsx`: Handles global daily pain reporting decoupled from workouts.
+- **Admin Adherence Monitoring (`frontend/src/lib/adherence.js`)**:
+  - The Admin panel calculates adherence using UTC dates (immune to DST):
+    - **🟢 Al día**: 0 a 2 días desde el último entrenamiento o cardio.
+    - **🟡 En Riesgo**: $\ge 3$ días sin actividad.
+    - **🔴 Inactivo**: $\ge 5$ días sin actividad.
+  - Displays a red **⚠️ alerta de dolor** si el paciente indicó molestia en su último registro.
 
 ### 3. WebAuthn / Passkeys Requirements
 
 - Single-origin requirement: The browser must interact with the frontend and backend on the same origin (`/api/...` proxied via Nginx).
-- `RP_ID` must match the browser's hostname exactly (e.g. `web-production-5a975.up.railway.app`).
-- `ORIGIN` must match the full canonical HTTPS URL (`https://web-production-5a975.up.railway.app`).
+- `RP_ID` must match the browser's hostname exactly.
+- `ORIGIN` must match the full canonical HTTPS URL.
 
 ### 4. Code Standards & Testing
 
-- All API tests (`api/test/`) must pass: `npm --prefix api test` (150/150 passing).
-- All Frontend unit tests (`frontend/src/lib/*.test.js`) must pass: `npm --prefix frontend test`.
+- **Dependency-light is a hard constraint.** Frontend: React + Router + Zustand and nothing else. API: zero frameworks (plain `node:http`).
+- All API tests (`api/test/`) must pass: `npm --prefix api test`.
+- All Frontend tests (`frontend/src/lib/*.test.js`) must pass: `npm --prefix frontend test`.
 - Progression engine and lifting logic must never be modified without companion unit tests.
-- Rebranding tokens: Light theme with Sky accent by default, Spanish language (`es`), brand signature `"GymHub by @medandresparra"`.
+- **Rebranding tokens**: Light theme with Sky accent by default, Spanish language (`es`), brand signature `"GymHub by @medandresparra"`.
