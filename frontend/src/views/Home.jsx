@@ -56,16 +56,13 @@ export default function Home() {
   const cardioThisWeek = cardioLogs.filter(c => c && (c.date || c.d) && weekKey(c.date || c.d, ws) === weekKey(todayISO(), ws))
   const cardioMinutesThisWeek = cardioThisWeek.reduce((sum, c) => sum + Math.max(0, Number(c.minutes) || 0), 0)
   const prescription = S.cardioPrescription || {
-    type: 'Caminata',
-    targetMinutes: 30,
-    frequencyPerWeek: 3,
     intensity: 'moderada',
-    note: 'Ritmo cómodo donde puedas conversar sin fatigarte'
+    note: 'Ritmo cómodo donde puedas conversar sin fatigarte',
+    weeklyTargetMinutes: 120
   }
-  const cardioType = prescription.type || 'Caminata'
-  const cardioTargetMinutes = Number(prescription.targetMinutes) || 30
-  const cardioFrequency = Number(prescription.frequencyPerWeek) || 3
-  const weeklyTargetMinutes = cardioTargetMinutes * cardioFrequency
+  const weeklyTargetMinutes = Number(prescription.weeklyTargetMinutes)
+    || (prescription.targetMinutes && prescription.frequencyPerWeek ? Number(prescription.targetMinutes) * Number(prescription.frequencyPerWeek) : 120)
+    || 120
 
   const painLogs = Array.isArray(S.painLogs) ? S.painLogs : []
   const painToday = painLogs
@@ -134,15 +131,14 @@ export default function Home() {
 
     {/* Ejercicio Cardiorrespiratorio Prescrito y Progreso Semanal */}
     <div className="card">
-      <div className="row between" style={{ marginBottom: 8 }}>
-        <div className="row" style={{ gap: 9, minWidth: 0 }}>
+      <div className="row between" style={{ marginBottom: 8, alignItems: 'center' }}>
+        <div className="row" style={{ gap: 9, minWidth: 0, alignItems: 'center' }}>
           <span className="lrow-i" style={{ background: 'color-mix(in srgb,var(--blue) 18%,transparent)', color: 'var(--blue)' }}>
             <Icon name="figureRun" />
           </span>
           <div style={{ minWidth: 0 }}>
-            <div className="lbl2">{t('Cardiorespiratory Exercise')}</div>
-            <div style={{ fontWeight: 700, fontSize: '1.05rem' }}>
-              {cardioType} ({cardioTargetMinutes} min)
+            <div style={{ fontWeight: 700, fontSize: '1.05rem', lineHeight: 1.25 }}>
+              {t('Cardiorespiratory Exercise')}
             </div>
           </div>
         </div>

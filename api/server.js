@@ -1001,13 +1001,16 @@ const routes = {
     const users = db.users.map(u => {
       const S = readState(u.id) || {};
       const workouts = S.workouts || [];
+      const cardioLogs = Array.isArray(S.cardioLogs) ? S.cardioLogs : [];
       const last = workouts[workouts.length - 1];
       const { lastCardio } = userCardioStats(S);
       const { hasPain, lastPainArea } = userPainStats(S);
       return {
         id: u.id, name: u.name, created: u.created || null,
         disabled: !!u.disabled, admin: isAdmin(u), invitedBy: u.invitedBy || null,
-        workouts: workouts.length,
+        workouts: workouts.length + cardioLogs.length,
+        strengthWorkouts: workouts.length,
+        cardioWorkouts: cardioLogs.length,
         lastWorkout: last ? last.d : null,
         lastCardio,
         lastCardioDate: lastCardio,
@@ -1029,6 +1032,7 @@ const routes = {
     if (!u) return json(res, 404, { error: 'no such user' });
     const S = readState(u.id) || {};
     const workouts = S.workouts || [];
+    const cardioLogs = Array.isArray(S.cardioLogs) ? S.cardioLogs : [];
     const last = workouts[workouts.length - 1];
     const { lastCardio } = userCardioStats(S);
     const { hasPain, lastPainArea } = userPainStats(S);
@@ -1036,7 +1040,9 @@ const routes = {
       user: {
         id: u.id, name: u.name, created: u.created || null, disabled: !!u.disabled,
         admin: isAdmin(u), invitedBy: u.invitedBy || null,
-        workouts: workouts.length,
+        workouts: workouts.length + cardioLogs.length,
+        strengthWorkouts: workouts.length,
+        cardioWorkouts: cardioLogs.length,
         lastWorkout: last ? last.d : null,
         lastCardio,
         lastCardioDate: lastCardio,

@@ -38,6 +38,7 @@ function UserDetail({ id, onChanged, close }) {
   if (!d) return <div className="muted small">Loading…</div>
   const u = d.user
   const adherence = calculateAdherence(u)
+  const totalWorkouts = (d.workouts?.length || 0) + (d.cardioLogs?.length || 0)
   const setDisabled = disabled => {
     api('/api/admin/user/disable', { method: 'POST', body: JSON.stringify({ id: u.id, disabled }) })
       .then(() => { toast(disabled ? 'User disabled' : 'User enabled'); onChanged(); close() })
@@ -56,7 +57,7 @@ function UserDetail({ id, onChanged, close }) {
       {u.lastCardio && <span className="adm-pill">last cardio {fmtDate(String(u.lastCardio).slice(0, 10))}</span>}
     </div>
     <div className="tiles" style={{ textAlign: 'left' }}>
-      <div className="tile"><div className="l">Workouts</div><div className="v" style={{ fontSize: '1.1rem' }}>{d.workouts.length}</div></div>
+      <div className="tile"><div className="l">Workouts</div><div className="v" style={{ fontSize: '1.1rem' }}>{totalWorkouts}</div></div>
       <div className="tile"><div className="l">Weigh-ins</div><div className="v" style={{ fontSize: '1.1rem' }}>{d.bodyweight.length}</div></div>
       <div className="tile"><div className="l">Routines</div><div className="v" style={{ fontSize: '1.1rem' }}>{d.routines.length}</div></div>
       <div className="tile"><div className="l">Last sync</div><div className="v" style={{ fontSize: '.95rem' }}>{rel(d.lastSync)}</div></div>
@@ -88,6 +89,16 @@ function UserDetail({ id, onChanged, close }) {
         <span className="small muted">{fmtVol(w.vol ?? workoutVolume(w), d.unit)}</span>
       </div>)}
     </div> : <div className="adm-empty">No workouts logged.</div>}
+    {d.cardioLogs && d.cardioLogs.length > 0 && <>
+      <h4 className="sec" style={{ marginTop: 16 }}>Cardio history</h4>
+      <div className="list" style={{ gap: 0 }}>
+        {d.cardioLogs.slice(0, 60).map((c, i) => <div key={c.id || i} className="row between" style={{ padding: '9px 2px', borderBottom: '1px solid var(--sep)' }}>
+          <div><div className="small" style={{ fontWeight: 600 }}>{c.type || 'Cardio'}</div>
+            <div className="dim" style={{ fontSize: '.72rem' }}>{fmtDate(c.date || c.d, true)} · {c.minutes || 0} min{c.effort ? ' · ' + c.effort : ''}</div></div>
+          <span className="small muted">{c.minutes || 0} min</span>
+        </div>)}
+      </div>
+    </>}
   </>
 }
 

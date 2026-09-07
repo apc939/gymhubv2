@@ -41,10 +41,9 @@ describe('Home view with Cardio and Pain logging', () => {
   it('renders weekly cardio progress section with default prescription', () => {
     const { host } = renderHome()
     expect(host.textContent).toContain(t('Cardiorespiratory Exercise'))
-    expect(host.textContent).toContain('Caminata (30 min)')
     expect(host.textContent).toContain(t('Weekly minutes progress'))
-    // Default: 30 min * 3 days = 90 min target
-    expect(host.textContent).toContain('0 / 90 min')
+    // Default: 120 min target
+    expect(host.textContent).toContain('0 / 120 min')
   })
 
   it('reflects logged cardio minutes in weekly progress', () => {
@@ -62,7 +61,6 @@ describe('Home view with Cardio and Pain logging', () => {
     useStore.setState({ S: state })
 
     const { host } = renderHome()
-    expect(host.textContent).toContain('Elíptica (20 min)')
     // 20 min * 4 days = 80 min target; 20 + 25 = 45 min completed
     expect(host.textContent).toContain('45 / 80 min')
     expect(host.textContent).toContain('Mantener pulsaciones moderadas')
@@ -118,9 +116,9 @@ describe('Home view with Cardio and Pain logging', () => {
     useStore.setState({ S: state })
 
     const { host } = renderHome()
-    expect(host.textContent).toContain('Remo (30 min)')
+    expect(host.textContent).toContain(t('Cardiorespiratory Exercise'))
     expect(host.textContent).not.toContain('undefined min')
-    expect(host.textContent).toContain('0 / 90 min')
+    expect(host.textContent).toContain('0 / 120 min')
   })
 
   it('maintains distinct Report button and picks chronologically latest pain entry for today', () => {
