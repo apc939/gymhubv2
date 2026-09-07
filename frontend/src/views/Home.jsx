@@ -273,20 +273,24 @@ export default function Home() {
     </div>
 
     <div className="card tappable" style={{ cursor: 'pointer' }} {...tappable(() => calendarSheet())}>
-      <div className="row between" style={{ alignItems: 'center' }}>
-        <div style={{ minWidth: 0 }}>
+      <div className="row between" style={{ alignItems: 'flex-start' }}>
+        <div style={{ minWidth: 0, flex: 1 }}>
           <div className="lbl2" style={{ marginBottom: 3, letterSpacing: '.02em' }}>
-            {t('Pensión Muscular · Envejecimiento Funcional')}
+            {t('Pensión Muscular')}
           </div>
-          <div className="row" style={{ gap: 7, fontSize: 21, fontWeight: 600, letterSpacing: '-.021em' }}>
+          <div className="row" style={{ gap: 7, fontSize: 19, fontWeight: 600, letterSpacing: '-.02em', flexWrap: 'wrap' }}>
             <Icon name="flame" style={{ color: 'var(--orange)' }} />
-            {t('{0} week streak', streakWeeks(S))}
+            {t('{0} week streak in strength', streakWeeks(S))}
           </div>
           <div className="muted small" style={{ marginTop: 3 }}>
             {wThisWeek}{plannedPerWeek ? ' / ' + plannedPerWeek : ''} {t('this week')} · {t(S.workouts.length === 1 ? '{0} workout total' : '{0} workouts total', S.workouts.length)}
           </div>
+          <div className="dim small row" style={{ marginTop: 7, gap: 5, alignItems: 'center' }}>
+            <Icon name="calendar" style={{ fontSize: 13 }} />
+            <span>{t('Tap to view calendar and reschedule days')}</span>
+          </div>
         </div>
-        <span style={{ fontSize: 26, lineHeight: 1, paddingRight: 4, filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.15))' }} role="img" aria-label="Fuerza">💪🏼</span>
+        <span style={{ fontSize: 28, lineHeight: 1, paddingLeft: 8, filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.15))' }} role="img" aria-label="Fuerza">💪🏼</span>
       </div>
     </div>
   </div>
