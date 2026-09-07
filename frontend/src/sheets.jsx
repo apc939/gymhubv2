@@ -31,6 +31,8 @@ import { swapActiveExercise } from './lib/active-exercise-swap.js'
 import { useSheetKeyboard, useRevealActiveChip, tappable } from './lib/use-sheet-keyboard.js'
 import { buildSessionEntries } from './lib/session-start.js'
 import { workoutsOn, backfillStart, backfillEnd, completeBackfill } from './lib/backfill.js'
+import CardioLogSheet from './components/CardioLogSheet.jsx'
+import PainLogSheet from './components/PainLogSheet.jsx'
 
 const S = () => useStore.getState().S
 const update = (...a) => useStore.getState().update(...a)
@@ -1752,3 +1754,12 @@ function doFinishWorkout() {
   beep(snd(), 880, 0.15); beep(snd(), 1100, 0.15, 0.18); beep(snd(), 1320, 0.3, 0.36)
   ui().openSheet(close => <FinishSummary w={w} prs={prs} e1prs={e1prs} close={close} />, { kind: 'center', locked: true })
 }
+
+export function cardioLogSheet(prescription) {
+  return ui().openSheet(close => <CardioLogSheet close={close} prescription={prescription} />)
+}
+
+export function painLogSheet() {
+  return ui().openSheet(close => <PainLogSheet close={close} />)
+}
+

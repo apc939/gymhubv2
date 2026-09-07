@@ -24,3 +24,6 @@ frontend/bundle-size.json
 
 # Clinical generated patient prescriptions
 clinical/prescripciones/*.html
+
+# Temporary reference projects
+zProyectoNuevo/

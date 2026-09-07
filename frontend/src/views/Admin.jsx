@@ -10,6 +10,7 @@ import { confirmSheet } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
 import { Button } from '../components/ui.jsx'
 import AdminCoach from './AdminCoach.jsx'
+import { calculateAdherence } from '../lib/adherence.js'
 import '../admin.css'
 
 // Admin-only operator dashboard (owner passkey + admin flag; guarded again server-side).
@@ -36,6 +37,7 @@ function UserDetail({ id, onChanged, close }) {
   useEffect(() => { api('/api/admin/user?id=' + encodeURIComponent(id)).then(setD).catch(e => toast(e.message)) }, [id])
   if (!d) return <div className="muted small">Loading…</div>
   const u = d.user
+  const adherence = calculateAdherence(u)
   const setDisabled = disabled => {
     api('/api/admin/user/disable', { method: 'POST', body: JSON.stringify({ id: u.id, disabled }) })
       .then(() => { toast(disabled ? 'User disabled' : 'User enabled'); onChanged(); close() })
@@ -44,10 +46,14 @@ function UserDetail({ id, onChanged, close }) {
   return <>
     <h3 className="capitalize">{u.name}</h3>
     <div className="row" style={{ gap: 6, flexWrap: 'wrap', margin: '8px 0 12px' }}>
+      <span className={`adm-pill ${adherence.cls}`}>{adherence.label}</span>
+      {u.hasPain && <span className="adm-pill bad" style={{ color: 'var(--red)' }}>⚠️ {u.lastPainArea ? `Dolor: ${u.lastPainArea}` : 'Dolor reportado'}</span>}
       {u.admin && <span className="adm-pill acc">admin</span>}
       {u.disabled && <span className="adm-pill bad">disabled</span>}
       {u.invitedBy && <span className="adm-pill">invite {u.invitedBy}</span>}
       <span className="adm-pill">joined {u.created ? fmtDate(u.created.slice(0, 10)) : '—'}</span>
+      {u.lastWorkout && <span className="adm-pill">last workout {fmtDate(String(u.lastWorkout).slice(0, 10))}</span>}
+      {u.lastCardio && <span className="adm-pill">last cardio {fmtDate(String(u.lastCardio).slice(0, 10))}</span>}
     </div>
     <div className="tiles" style={{ textAlign: 'left' }}>
       <div className="tile"><div className="l">Workouts</div><div className="v" style={{ fontSize: '1.1rem' }}>{d.workouts.length}</div></div>
@@ -245,11 +251,42 @@ export default function Admin() {
       <h2 style={{ margin: 0 }}>Users</h2>
       <div className="adm-lead">Everyone with a profile on this instance. Tap one to see their activity or to disable the account — their data is never deleted from here.</div>
       <div className="list">
-        {(users || []).map(u => <div key={u.id} className="item" onClick={() => openUser(u.id)} style={u.disabled ? { opacity: .55 } : null}>
-          <div className="grow"><div className="tt">{u.live && <Icon name="dot" style={{ fontSize: 9, color: 'var(--green)', display: 'inline-block', marginRight: 5 }} />}{u.name} {u.admin && <span className="adm-pill acc" style={{ marginLeft: 4 }}>admin</span>}{u.disabled && <span className="adm-pill bad" style={{ marginLeft: 4 }}>disabled</span>}</div>
-            <div className="ss">{u.live ? 'training now · ' + u.live.name : u.workouts + ' workouts' + (u.lastWorkout ? ' · last ' + fmtDate(u.lastWorkout) : '') + ' · last sync ' + rel(u.lastSync)}</div></div>
-          {u.hasPush && <Icon name="bell" title="push notifications on" style={{ fontSize: 15, color: 'var(--label-3)' }} />}<Icon name="chevronRight" className="chev" />
-        </div>)}
+        {(users || []).map(u => {
+          const adherence = calculateAdherence(u)
+          return <div key={u.id} className="item" onClick={() => openUser(u.id)} style={u.disabled ? { opacity: .55 } : null}>
+            <div className="grow">
+              <div className="tt" style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 6 }}>
+                {u.live && <Icon name="dot" style={{ fontSize: 9, color: 'var(--green)', display: 'inline-block' }} />}
+                <span>{u.name}</span>
+                <span className={`adm-pill ${adherence.cls}`} title={adherence.days != null ? `${adherence.days}d sin actividad` : undefined}>{adherence.label}</span>
+                {u.hasPain && (
+                  <span
+                    title={u.lastPainArea ? `Dolor reportado: ${u.lastPainArea}` : 'Dolor reportado'}
+                    aria-label="Alerta de dolor"
+                    style={{
+                      color: 'var(--red)',
+                      fontSize: '14px',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      cursor: 'help',
+                      filter: 'drop-shadow(0 0 1px var(--red))'
+                    }}
+                  >
+                    ⚠️
+                  </span>
+                )}
+                {u.admin && <span className="adm-pill acc">admin</span>}
+                {u.disabled && <span className="adm-pill bad">disabled</span>}
+              </div>
+              <div className="ss">
+                {u.live
+                  ? 'training now · ' + u.live.name
+                  : u.workouts + ' workouts' + (u.lastWorkout ? ' · last ' + fmtDate(String(u.lastWorkout).slice(0, 10)) : '') + (u.lastCardio ? ' · cardio ' + fmtDate(String(u.lastCardio).slice(0, 10)) : '') + ' · last sync ' + rel(u.lastSync)}
+              </div>
+            </div>
+            {u.hasPush && <Icon name="bell" title="push notifications on" style={{ fontSize: 15, color: 'var(--label-3)' }} />}<Icon name="chevronRight" className="chev" />
+          </div>
+        })}
         {users && !users.length && <div className="adm-empty">No users yet.</div>}
       </div>
     </div>

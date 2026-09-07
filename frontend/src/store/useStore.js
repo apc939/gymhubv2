@@ -43,10 +43,12 @@ export const DEF = {
   // kind of code the gym issued. Just data, so it syncs and backs up like everything else.
   //   [{ id, label, value, fmt }]
   gymCards: [],
-  // Whether the check-in feature is on at all (Settings toggle). Off hides the Home
-  // card and the /checkin route; the saved gymCards stay so turning it back on restores them.
   // Defaults on; an older profile without the key reads as on (`!== false`).
   checkIn: true,
+  // Clinical cardio prescription and logged sessions for sports medicine monitoring
+  cardioPrescription: null,
+  cardioLogs: [],
+  painLogs: [],
 }
 const clone = o => JSON.parse(JSON.stringify(o))
 

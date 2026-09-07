@@ -4,7 +4,7 @@ import { useStore } from '../store/useStore.js'
 import { effectiveRoutine, effectiveRoutineId, nextTrainingDay, streakWeeks, lastBW, setsDoneActive } from '../lib/history.js'
 import { fmtNum, fmtDate, todayISO, isoOf, weekKey, weekStartOf, weekDayOffset, DAYS, DAYN } from '../lib/format.js'
 import { t, dateLocale } from '../lib/i18n.js'
-import { bwSheet, goalSheet, dayOverrideSheet, calendarSheet, startFlow, loadStarterPlan, bwDeltaColor } from '../sheets.jsx'
+import { bwSheet, goalSheet, dayOverrideSheet, calendarSheet, startFlow, loadStarterPlan, bwDeltaColor, cardioLogSheet, painLogSheet } from '../sheets.jsx'
 import LineChart from '../components/LineChart.jsx'
 import Icon from '../components/Icon.jsx'
 import { Button } from '../components/ui.jsx'
@@ -51,6 +51,27 @@ export default function Home() {
   const wThisWeek = S.workouts.filter(w => weekKey(w.d, ws) === weekKey(todayISO(), ws)).length
   const plannedPerWeek = Object.keys(S.week).filter(k => S.week[k]).length
   const bwPoints = S.bodyweight.slice(-30).map(b => ({ t: b.t || new Date(b.d).getTime(), y: b.w, d: b.d }))
+
+  const cardioLogs = Array.isArray(S.cardioLogs) ? S.cardioLogs : []
+  const cardioThisWeek = cardioLogs.filter(c => c && (c.date || c.d) && weekKey(c.date || c.d, ws) === weekKey(todayISO(), ws))
+  const cardioMinutesThisWeek = cardioThisWeek.reduce((sum, c) => sum + Math.max(0, Number(c.minutes) || 0), 0)
+  const prescription = S.cardioPrescription || {
+    type: 'Caminata',
+    targetMinutes: 30,
+    frequencyPerWeek: 3,
+    intensity: 'moderada',
+    note: 'Ritmo cómodo donde puedas conversar sin fatigarte'
+  }
+  const cardioType = prescription.type || 'Caminata'
+  const cardioTargetMinutes = Number(prescription.targetMinutes) || 30
+  const cardioFrequency = Number(prescription.frequencyPerWeek) || 3
+  const weeklyTargetMinutes = cardioTargetMinutes * cardioFrequency
+
+  const painLogs = Array.isArray(S.painLogs) ? S.painLogs : []
+  const painToday = painLogs
+    .filter(p => p && (p.date === todayISO() || p.d === todayISO()))
+    .sort((a, b) => (a.ts || 0) - (b.ts || 0))
+    .at(-1) || null
 
   // today's session shown right under the week strip
   const onToday = () => { if (S.active) nav('/workout'); else if (routine) startFlow(routine.id); else dayOverrideSheet(todayISO()) }
@@ -110,6 +131,108 @@ export default function Home() {
         </div>
       </div>
     )}
+
+    {/* Ejercicio Cardiorrespiratorio Prescrito y Progreso Semanal */}
+    <div className="card">
+      <div className="row between" style={{ marginBottom: 8 }}>
+        <div className="row" style={{ gap: 9, minWidth: 0 }}>
+          <span className="lrow-i" style={{ background: 'color-mix(in srgb,var(--blue) 18%,transparent)', color: 'var(--blue)' }}>
+            <Icon name="figureRun" />
+          </span>
+          <div style={{ minWidth: 0 }}>
+            <div className="lbl2">{t('Cardiorespiratory Exercise')}</div>
+            <div style={{ fontWeight: 700, fontSize: '1.05rem' }}>
+              {cardioType} ({cardioTargetMinutes} min)
+            </div>
+          </div>
+        </div>
+        <Button
+          size="sm"
+          variant="primary"
+          icon="plus"
+          onClick={() => cardioLogSheet(prescription)}
+        >
+          {t('Log')}
+        </Button>
+      </div>
+
+      <div style={{ margin: '10px 0 6px' }}>
+        <div className="row between small" style={{ marginBottom: 4 }}>
+          <span className="muted">{t('Weekly minutes progress')}:</span>
+          <span style={{ fontWeight: 600, color: cardioMinutesThisWeek >= weeklyTargetMinutes ? 'var(--green)' : 'inherit' }}>
+            {cardioMinutesThisWeek} / {weeklyTargetMinutes} min {cardioMinutesThisWeek >= weeklyTargetMinutes && '✓'}
+          </span>
+        </div>
+        <div style={{ width: '100%', height: 7, background: 'var(--surface-3)', borderRadius: 4, overflow: 'hidden' }}>
+          <div
+            style={{
+              width: `${Math.max(0, Math.min(100, Math.round((cardioMinutesThisWeek / (weeklyTargetMinutes || 1)) * 100)))}%`,
+              height: '100%',
+              background: cardioMinutesThisWeek >= weeklyTargetMinutes ? 'var(--green)' : 'var(--blue)',
+              borderRadius: 4,
+              transition: 'width .3s ease'
+            }}
+          />
+        </div>
+      </div>
+
+      {prescription.note && (
+        <div className="dim small" style={{ marginTop: 6, fontStyle: 'italic' }}>
+          {t('Clinical note')}: "{prescription.note}"
+        </div>
+      )}
+    </div>
+
+    {/* Acceso directo: Reporte Diario de Dolor / Molestia */}
+    <div className="card tappable" style={{ cursor: 'pointer' }} {...tappable(() => painLogSheet())}>
+      <div className="row between">
+        <div className="row" style={{ gap: 9, minWidth: 0 }}>
+          <span
+            className="lrow-i"
+            style={{
+              background: painToday?.pain
+                ? 'color-mix(in srgb,var(--orange) 18%,transparent)'
+                : 'color-mix(in srgb,var(--green) 18%,transparent)',
+              color: painToday?.pain ? 'var(--orange)' : 'var(--green)'
+            }}
+          >
+            <Icon name={painToday?.pain ? 'warning' : 'shield'} />
+          </span>
+          <div style={{ minWidth: 0 }}>
+            <div className="lbl2">{t('Clinical tracking')}</div>
+            <div className="ttl">
+              {painToday
+                ? (painToday.pain ? `${t('Discomfort')}: ${painToday.area || 'Reportada'}` : t('Zero Pain (Today)'))
+                : t('Report Pain or Discomfort')}
+            </div>
+          </div>
+        </div>
+        <div className="row" style={{ gap: 8, alignItems: 'center' }}>
+          {painToday && (
+            <span
+              className="tag"
+              style={{
+                color: painToday.pain ? 'var(--orange)' : 'var(--green)',
+                background: painToday.pain
+                  ? 'color-mix(in srgb,var(--orange) 16%,transparent)'
+                  : 'color-mix(in srgb,var(--green) 16%,transparent)'
+              }}
+            >
+              {painToday.pain ? t('Discomfort') : t('Pain-free')}
+            </span>
+          )}
+          <Button
+            size="sm"
+            onClick={e => {
+              e.stopPropagation()
+              painLogSheet()
+            }}
+          >
+            {t('Report')}
+          </Button>
+        </div>
+      </div>
+    </div>
 
     {!S.routines.length && !S.active && (
       <div className="card">

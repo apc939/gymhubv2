@@ -21,6 +21,7 @@ import { startCadence } from './coach/cadence.js';
 import { startWarmup } from './coach/warmup.js';
 import { dayReminderPush, restTimerPush, testPush } from './push-messages.js';
 import { verifyError } from './verify-error.js';
+import { userCardioStats, userPainStats } from './user-stats.js';
 
 const PORT = +(process.env.PORT || 3000);
 const DATA = process.env.DATA_DIR || '/data';
@@ -1001,11 +1002,17 @@ const routes = {
       const S = readState(u.id) || {};
       const workouts = S.workouts || [];
       const last = workouts[workouts.length - 1];
+      const { lastCardio } = userCardioStats(S);
+      const { hasPain, lastPainArea } = userPainStats(S);
       return {
         id: u.id, name: u.name, created: u.created || null,
         disabled: !!u.disabled, admin: isAdmin(u), invitedBy: u.invitedBy || null,
         workouts: workouts.length,
         lastWorkout: last ? last.d : null,
+        lastCardio,
+        lastCardioDate: lastCardio,
+        hasPain,
+        lastPainArea,
         lastSync: S._ts || null,
         hasPush: db.subs.some(s => s.userId === u.id),
         live: livePresence(u.id)
@@ -1021,13 +1028,28 @@ const routes = {
     const u = db.users.find(x => x.id === id);
     if (!u) return json(res, 404, { error: 'no such user' });
     const S = readState(u.id) || {};
+    const workouts = S.workouts || [];
+    const last = workouts[workouts.length - 1];
+    const { lastCardio } = userCardioStats(S);
+    const { hasPain, lastPainArea } = userPainStats(S);
     json(res, 200, {
-      user: { id: u.id, name: u.name, created: u.created || null, disabled: !!u.disabled, admin: isAdmin(u), invitedBy: u.invitedBy || null },
+      user: {
+        id: u.id, name: u.name, created: u.created || null, disabled: !!u.disabled,
+        admin: isAdmin(u), invitedBy: u.invitedBy || null,
+        workouts: workouts.length,
+        lastWorkout: last ? last.d : null,
+        lastCardio,
+        lastCardioDate: lastCardio,
+        hasPain,
+        lastPainArea
+      },
       unit: S.unit || 'kg',
       lastSync: S._ts || null,
       routines: (S.routines || []).map(r => ({ id: r.id, name: r.name, emoji: r.emoji, count: (r.ex || []).length })),
       bodyweight: S.bodyweight || [],
-      workouts: (S.workouts || []).slice().reverse()   // newest first for display
+      workouts: (S.workouts || []).slice().reverse(),   // newest first for display
+      cardioLogs: (S.cardioLogs || []).slice().reverse(),
+      painLogs: (S.painLogs || []).slice().reverse()
     });
   },
 
