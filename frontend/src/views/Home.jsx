@@ -273,15 +273,20 @@ export default function Home() {
     </div>
 
     <div className="card tappable" style={{ cursor: 'pointer' }} {...tappable(() => calendarSheet())}>
-      <div className="row between">
-        <div>
-          <div className="row" style={{ gap: 7, fontSize: 22, fontWeight: 600, letterSpacing: '-.021em' }}>
+      <div className="row between" style={{ alignItems: 'center' }}>
+        <div style={{ minWidth: 0 }}>
+          <div className="lbl2" style={{ marginBottom: 3, letterSpacing: '.02em' }}>
+            {t('Pensión Muscular · Envejecimiento Funcional')}
+          </div>
+          <div className="row" style={{ gap: 7, fontSize: 21, fontWeight: 600, letterSpacing: '-.021em' }}>
             <Icon name="flame" style={{ color: 'var(--orange)' }} />
             {t('{0} week streak', streakWeeks(S))}
           </div>
-          <div className="muted small" style={{ marginTop: 2 }}>{wThisWeek}{plannedPerWeek ? ' / ' + plannedPerWeek : ''} {t('this week')} · {t(S.workouts.length === 1 ? '{0} workout total' : '{0} workouts total', S.workouts.length)}</div>
+          <div className="muted small" style={{ marginTop: 3 }}>
+            {wThisWeek}{plannedPerWeek ? ' / ' + plannedPerWeek : ''} {t('this week')} · {t(S.workouts.length === 1 ? '{0} workout total' : '{0} workouts total', S.workouts.length)}
+          </div>
         </div>
-        <Icon name="calendar" className="chev" style={{ fontSize: 20 }} />
+        <span style={{ fontSize: 26, lineHeight: 1, paddingRight: 4, filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.15))' }} role="img" aria-label="Fuerza">💪🏼</span>
       </div>
     </div>
   </div>
